@@ -9,7 +9,9 @@ class Photo(Base):
     __tablename__ = 'photos'
 
     photo_id = Column(MySQL_BINARY(16), primary_key=True, default=lambda: uuid.uuid4().bytes)
+    user_id = Column(MySQL_BINARY(16), ForeignKey('users.user_id'))
     journal_id = Column(MySQL_BINARY(16), ForeignKey('journals.journal_id'))
+    device_id = Column(MySQL_BINARY(16), ForeignKey('devices.device_id'))
     time_created = Column(DateTime, default=datetime.utcnow)
     time_modified = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     location = Column(String(255))
@@ -21,3 +23,5 @@ class Photo(Base):
     file_type = Column(String(255))
 
     journal = relationship("Journal", back_populates="photos")
+    user = relationship("User", back_populates="photos")
+    device = relationship("Device", back_populates="photos")

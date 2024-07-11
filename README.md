@@ -32,7 +32,8 @@ Stacks: React
 
 Stacks: fastapi, mysql
 
-- [ ] Database design: journal, picture
+- [x] Database design
+- [ ] Endpoint design
 - [ ] Journal Generate
 
 ## 使用场景

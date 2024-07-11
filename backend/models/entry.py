@@ -10,10 +10,14 @@ class Entry(Base):
     __tablename__ = 'entries'
 
     entry_id = Column(MySQL_BINARY(16), primary_key=True, default=lambda: uuid.uuid4().bytes)
+    user_id = Column(MySQL_BINARY(16), ForeignKey('users.user_id'))
     journal_id = Column(MySQL_BINARY(16), ForeignKey('journals.journal_id'))
+    device_id = Column(MySQL_BINARY(16), ForeignKey('devices.device_id'))
     time_created = Column(DateTime, default=datetime.utcnow)
     time_modified = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     position = Column(String(255))
-    content = Column(String(255))
+    content = Column(Text)
 
     journal = relationship("Journal", back_populates="entries")
+    user = relationship("User", back_populates="entries")
+    device = relationship("Device", back_populates="entries")

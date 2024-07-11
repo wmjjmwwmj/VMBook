@@ -39,6 +39,8 @@ Run `create_tables.py` in `scripts` folder.
 
 ## Data Model
 
+![Data Model](datamodel.png)
+
 ### User
 
 | Column Name | Data Type | Description |
@@ -77,7 +79,6 @@ Run `create_tables.py` in `scripts` folder.
 |-------------|-----------|-------------|
 | journal_id  | UUID      | Primary Key |
 | user_id     | UUID      | Foreign Key to user table |
-| device_id   | UUID      | Foreign Key to device table |
 | title       | STRING    | Title of the journal |
 | text_content| TEXT      | Main content of the journal |
 | time_created| DATETIME  | Creation timestamp |
@@ -91,7 +92,9 @@ Run `create_tables.py` in `scripts` folder.
 | Column Name | Data Type | Description |
 |-------------|-----------|-------------|
 | photo_id    | UUID      | Primary Key |
+| user_id     | UUID      | Foreign Key to journal table |
 | journal_id  | UUID      | Foreign Key to journal table |
+| device_id  | UUID      | Foreign Key to device table |
 | time_created| DATETIME  | Creation timestamp |
 | time_modified| DATETIME | Last modification timestamp |
 | location    | STRING    | Location where the photo was taken |
@@ -101,13 +104,14 @@ Run `create_tables.py` in `scripts` folder.
 | file_name   | STRING    | Original file name |
 | file_size   | INTEGER   | Size of the file in bytes |
 | file_type   | STRING    | MIME type of the file |
-| metadata    | JSON      | Additional metadata (e.g., EXIF data) |
 
 ## Entry (separate text entry)
 
 | Column Name | Data Type | Description |
 |-------------|-----------|-------------|
 | entry_id    | UUID      | Primary Key |
+| user_id  | UUID      | Foreign Key to user table |
+| user_id  | UUID      | Foreign Key to device table |
 | journal_id  | UUID      | Foreign Key to journal table |
 | time_created| DATETIME  | Creation timestamp |
 | time_modified| DATETIME | Last modification timestamp |
