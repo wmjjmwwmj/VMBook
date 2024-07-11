@@ -30,7 +30,7 @@ Stacks: React
 
 ### Backend
 
-Stacks: django, sqlite3
+Stacks: fastapi, mysql
 
 - [ ] Database design: journal, picture
 - [ ] Journal Generate
