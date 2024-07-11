@@ -15,9 +15,9 @@ Record your life on the fly!
 
 Stacks: ESP32S3 Sense with Micro-python 
 
-- [ ] Manual Capture photo
+- [ ] Internet connection
+- [ ] Manually Capture photo
 - [ ] Photo summarize
-- [ ] Storage data to db
  
 
 ### Frontend
@@ -30,12 +30,10 @@ Stacks: React
 
 ### Backend
 
-- Stacks: django, sqlite3
+Stacks: django, sqlite3
 
 - [ ] Database design: journal, picture
 - [ ] Journal Generate
-
-
 
 ## 使用场景
 
@@ -46,3 +44,6 @@ Stacks: React
 手动模式
 定时模式
 
+## Future Work
+
+- Interactive image summary
