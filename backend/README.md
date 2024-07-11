@@ -41,7 +41,8 @@ Run `create_tables.py` in `scripts` folder.
 
 ![Data Model](datamodel.png)
 
-### User
+
+<!-- ### User
 
 | Column Name | Data Type | Description |
 |-------------|-----------|-------------|
@@ -116,8 +117,44 @@ Run `create_tables.py` in `scripts` folder.
 | time_created| DATETIME  | Creation timestamp |
 | time_modified| DATETIME | Last modification timestamp |
 | position    | STRING    | Position of the entry in the journal |
-| content     | STRING    | Content of the entry |
+| content     | STRING    | Content of the entry | -->
 
 
 ## API Endpoints
 
+Your database design includes tables for users, devices, photos, journals, and entries. Here's an example of how you could design RESTful API endpoints for these resources:
+
+### Users
+- `GET /users` - Retrieve a list of all users
+- `GET /users/{userId}` - Retrieve details about a specific user
+- `POST /users` - Create a new user
+- `PUT /users/{userId}` - Update an existing user
+- `DELETE /users/{userId}` - Delete a user
+
+### Devices
+- `GET /users/{userId}/devices` - Retrieve all devices for a specific user
+- `GET /users/{userId}/devices/{deviceId}` - Retrieve details about a specific device
+- `POST /users/{userId}/devices` - Add a new device to a user
+- `PUT /users/{userId}/devices/{deviceId}` - Update a specific device
+- `DELETE /users/{userId}/devices/{deviceId}` - Delete a device
+
+### Photos
+- `GET /users/{userId}/photos` - Retrieve all photos for a user
+- `GET /photos/{photoId}` - Retrieve a specific photo
+- `POST /users/{userId}/photos` - Upload a new photo for a user
+- `DELETE /photos/{photoId}` - Delete a specific photo
+- `GET /photos/{photoID}/analyze` - Describe a specific photo
+
+### Journals
+- `GET /users/{userId}/journals` - Retrieve all journals for a user
+- `GET /journals/{journalId}` - Retrieve details of a specific journal
+- `POST /users/{userId}/journals` - Create a new journal for a user
+- `PUT /journals/{journalId}` - Update a journal
+- `DELETE /journals/{journalId}` - Delete a journal
+
+### Text Entries
+- `GET /journals/{journalId}/entries` - Retrieve entries in a journal
+- `GET /entries/{entryId}` - Retrieve a specific entry
+- `POST /journals/{journalId}/entries` - Add an entry to a journal
+- `PUT /entries/{entryId}` - Update an entry
+- `DELETE /entries/{entryId}` - Delete an entry

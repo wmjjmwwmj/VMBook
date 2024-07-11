@@ -21,3 +21,4 @@ class User(Base):
     devices = relationship("Device", back_populates="user")
     journals = relationship("Journal", back_populates="user")
     photos = relationship("Photo", back_populates="user")
+    entries = relationship("Entry", back_populates="user")
