@@ -16,7 +16,7 @@ mysqld --initialize-insecure
 
 Start the MySQL server in the console: 
 ```cmd
-mysql --console
+mysqld --console
 ```
 
 ### Create DB

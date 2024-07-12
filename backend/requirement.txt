@@ -1,5 +1,6 @@
 fastapi
 uvicorn
 sqlalchemy
-mysqlconnector
+mysql-connector-python
 Pillow
+python-dotenv
