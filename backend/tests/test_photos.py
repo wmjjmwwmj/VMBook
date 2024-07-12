@@ -24,7 +24,7 @@ def test_create_user_photo():
     }
 
     # Make POST request to create photo
-    response = requests.post(f"{SERVER_URL}/users/{user_id}/photos", json=test_photo)
+    response = requests.post(f"{SERVER_URL}/users/{user_id}/photos", files=test_photo)
     
     assert response.status_code == 200
     assert response.json()["file_name"] == test_photo["file_name"]
