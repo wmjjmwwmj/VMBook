@@ -1,24 +1,32 @@
-import uuid
+from pydantic import BaseModel
+from typing import Optional, List
+from uuid import UUID, uuid4
 from datetime import datetime
-from sqlalchemy import Column, String, Boolean, DateTime, Text, ForeignKey, Integer
-from sqlalchemy.dialects.mysql import BINARY as MySQL_BINARY
-from sqlalchemy.orm import relationship
-from .base import Base
 
-class User(Base):
-    __tablename__ = 'users'
+class UserBase(BaseModel):
+    username: str
+    email: str
     
-    user_id = Column(MySQL_BINARY(16), primary_key=True, default=lambda: uuid.uuid4().bytes)
-    username = Column(String(255), unique=True, nullable=False)
-    email = Column(String(255), unique=True, nullable=False)
-    password_hash = Column(String(255), nullable=False)
-    time_created = Column(DateTime, default=datetime.utcnow)
-    last_login = Column(DateTime, nullable=True)
-    is_active = Column(Boolean, default=True)
-    profile_picture_url = Column(String(255), nullable=True)
-    bio = Column(Text, nullable=True)
-
-    devices = relationship("Device", back_populates="user")
-    journals = relationship("Journal", back_populates="user")
-    photos = relationship("Photo", back_populates="user")
-    entries = relationship("Entry", back_populates="user")
+    
+class UserCreate(UserBase):
+    password: str
+    
+class UserUpdate(UserBase):
+    password: Optional[str] = None
+    is_active: Optional[bool] = None
+    profile_picture_url: Optional[str] = None
+    bio: Optional[str] = None
+    
+    
+class UserResponse(UserBase):
+    user_id: UUID
+    username: str
+    email: str
+    is_active: bool
+    time_created: datetime
+    last_login: Optional[datetime]
+    profile_picture_url: Optional[str]
+    bio: Optional[str]
+    
+    class Config:
+        from_attributes = True

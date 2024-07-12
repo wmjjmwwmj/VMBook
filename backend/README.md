@@ -112,7 +112,6 @@ Run `create_tables.py` in `scripts` folder.
 |-------------|-----------|-------------|
 | entry_id    | UUID      | Primary Key |
 | user_id  | UUID      | Foreign Key to user table |
-| user_id  | UUID      | Foreign Key to device table |
 | journal_id  | UUID      | Foreign Key to journal table |
 | time_created| DATETIME  | Creation timestamp |
 | time_modified| DATETIME | Last modification timestamp |
@@ -140,17 +139,18 @@ Your database design includes tables for users, devices, photos, journals, and e
 
 ### Photos
 - `GET /users/{userId}/photos` - Retrieve all photos for a user
-- `GET /photos/{photoId}` - Retrieve a specific photo
+- `GET /users/{user_id}/photos/{photo_id}` - Retrieve a specific photo
 - `POST /users/{userId}/photos` - Upload a new photo for a user
-- `DELETE /photos/{photoId}` - Delete a specific photo
-- `GET /photos/{photoID}/analyze` - Describe a specific photo
+- `DELETE /users/{userId}/photos/{photoId}` - Delete a specific photo
+- `PUT /users/{userId}/photos/{photoId}` - Update info for a specific photo
+- `POST /photos/analyze` - Describe a base64 photo 
 
 ### Journals
 - `GET /users/{userId}/journals` - Retrieve all journals for a user
-- `GET /journals/{journalId}` - Retrieve details of a specific journal
+- `GET /users/{userId}/journals/{journalId}` - Retrieve details of a specific journal
 - `POST /users/{userId}/journals` - Create a new journal for a user
-- `PUT /journals/{journalId}` - Update a journal
-- `DELETE /journals/{journalId}` - Delete a journal
+- `PUT /users/{userId}/journals/{journalId}` - Update a journal by a user
+- `DELETE /users/{userId}/{journalId}` - Delete a journal
 
 ### Text Entries
 - `GET /journals/{journalId}/entries` - Retrieve entries in a journal

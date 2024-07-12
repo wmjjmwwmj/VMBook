@@ -1,17 +1,16 @@
 import sys
 import os
 
-# Add the project root directory to the Python path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from fastapi import FastAPI
-from models import get_db
-import api.endpoints
+from database import get_db
+from api import router
 
 app = FastAPI()
 
 # Your FastAPI app setup code here
-app.include_router(api.endpoints.router)
+app.include_router(router)
 
 # Example of using the get_db function
 @app.get("/")
@@ -24,4 +23,4 @@ async def root():
 if __name__ == "__main__":
 
     import uvicorn
-    uvicorn.run(app, host="localhost", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=8000)

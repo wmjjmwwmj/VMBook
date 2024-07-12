@@ -1,27 +1,40 @@
-import uuid
+from pydantic import BaseModel
+from typing import Optional, List, BinaryIO
+from uuid import UUID, uuid4
 from datetime import datetime
-from sqlalchemy import Column, String, Boolean, DateTime, Text, ForeignKey, Integer
-from sqlalchemy.dialects.mysql import BINARY as MySQL_BINARY
-from sqlalchemy.orm import relationship
-from .base import Base
 
-class Photo(Base):
-    __tablename__ = 'photos'
+class PhotoBase(BaseModel):
+    pass
+    
+class PhotoCreate(PhotoBase):
+    image: BinaryIO
+    device_id: UUID
+    location: Optional[str] = None
+    file_name: Optional[str] = None
+    file_size: Optional[int] = None
+    file_type: Optional[str] = None
+    
+    class Config:
+        arbitrary_types_allowed=True
 
-    photo_id = Column(MySQL_BINARY(16), primary_key=True, default=lambda: uuid.uuid4().bytes)
-    user_id = Column(MySQL_BINARY(16), ForeignKey('users.user_id'))
-    journal_id = Column(MySQL_BINARY(16), ForeignKey('journals.journal_id'))
-    device_id = Column(MySQL_BINARY(16), ForeignKey('devices.device_id'))
-    time_created = Column(DateTime, default=datetime.utcnow)
-    time_modified = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    location = Column(String(255))
-    description = Column(String(255))
-    url = Column(String(255), nullable=False)
-    starred = Column(Boolean, default=False)
-    file_name = Column(String(255))
-    file_size = Column(Integer)
-    file_type = Column(String(255))
-
-    journal = relationship("Journal", back_populates="photos")
-    user = relationship("User", back_populates="photos")
-    device = relationship("Device", back_populates="photos")
+class PhotoUpdate(PhotoBase):
+    photo_id: UUID
+    user_id: Optional[UUID] = None
+    location: Optional[str] = None
+    description: Optional[str] = None
+    starred: Optional[bool] = None
+    file_name: Optional[str] = None
+    
+class PhotoResponse(PhotoBase):
+    photo_id: UUID
+    user_id: UUID
+    time_created: datetime
+    time_modified: datetime
+    journal_id: Optional[UUID] = None
+    description: Optional[str] = None
+    file_name: Optional[str] = None
+    
+    
+    class Config:
+        from_attributes = True
+    

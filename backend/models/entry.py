@@ -1,23 +1,28 @@
-import uuid
+from pydantic import BaseModel
+from typing import Optional, List
+from uuid import UUID, uuid4
 from datetime import datetime
-from sqlalchemy import Column, String, Boolean, DateTime, Text, ForeignKey, Integer
-from sqlalchemy.dialects.mysql import BINARY as MySQL_BINARY
-from sqlalchemy.orm import relationship
-from .base import Base
 
+class EntryBase(BaseModel):
+    pass
 
-class Entry(Base):
-    __tablename__ = 'entries'
-
-    entry_id = Column(MySQL_BINARY(16), primary_key=True, default=lambda: uuid.uuid4().bytes)
-    user_id = Column(MySQL_BINARY(16), ForeignKey('users.user_id'))
-    journal_id = Column(MySQL_BINARY(16), ForeignKey('journals.journal_id'))
-    device_id = Column(MySQL_BINARY(16), ForeignKey('devices.device_id'))
-    time_created = Column(DateTime, default=datetime.utcnow)
-    time_modified = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    position = Column(String(255))
-    content = Column(Text)
-
-    journal = relationship("Journal", back_populates="entries")
-    user = relationship("User", back_populates="entries")
-    device = relationship("Device", back_populates="entries")
+class EntryCreate(EntryBase):
+    content: str
+    
+class EntryUpdate(EntryBase):
+    user_id: Optional[UUID] = None
+    journal_id: Optional[UUID] = None
+    entry_id: UUID
+    content: Optional[str] = None
+    
+    
+class EntryResponse(EntryBase):
+    entry_id: UUID
+    user_id: UUID
+    journal_id: UUID
+    time_created: datetime
+    time_modified: datetime
+    content: str
+    
+    class Config:
+        from_attributes = True
