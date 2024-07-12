@@ -4,8 +4,8 @@ from uuid import UUID, uuid4
 from datetime import datetime
 
 class UserBase(BaseModel):
-    username: str
-    email: str
+    username: Optional[str] = None
+    email: Optional[str] = None
     
     
 class UserCreate(UserBase):

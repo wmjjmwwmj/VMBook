@@ -21,6 +21,8 @@ def get_db() -> Session:
 
 # This function can be called to create all tables
 def create_db_and_tables():
+    SQLModel.metadata.drop_all(engine)
+    print("Tables dropped")
     SQLModel.metadata.create_all(engine)
     print("Tables created")
 
@@ -28,7 +30,7 @@ class User(SQLModel, table=True):
     __tablename__ = 'users'
     
     user_id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
-    username: str = Field(max_length=255, unique=True, nullable=False)
+    username: str = Field(max_length=255, unique=False, nullable=False)
     email: str = Field(max_length=255, unique=True, nullable=False)
     password_hash: str = Field(max_length=255, nullable=False)
     time_created: datetime = Field(default_factory=datetime.utcnow)
@@ -49,11 +51,11 @@ class Device(SQLModel, table=True):
     device_id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     user_id: uuid.UUID = Field(foreign_key="users.user_id")
     
-    device_name: str = Field(max_length=255)
-    device_type: str = Field(max_length=255)
-    os_type: str = Field(max_length=255)
-    os_version: str = Field(max_length=255)
-    app_version: str = Field(max_length=255)
+    device_name: str = Field(max_length=255, default=None)
+    device_type: Optional[str] = Field(max_length=255, default=None)
+    os_type: Optional[str] = Field(max_length=255, default=None)
+    os_version: Optional[str] = Field(max_length=255, default=None)
+    app_version: Optional[str] = Field(max_length=255, default=None)
     
     last_sync: Optional[datetime] = Field(default=None)
     is_active: bool = Field(default=True)
@@ -72,7 +74,7 @@ class Journal(SQLModel, table=True):
 
     journal_id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     user_id: uuid.UUID = Field(foreign_key="users.user_id")
-    title: str = Field(max_length=255)
+    title: str = Field(max_length=255, nullable=False)
     description: Optional[str] = Field(max_length=255, default=None)
     time_created: datetime = Field(default_factory=datetime.utcnow)
     time_modified: datetime = Field(default_factory=datetime.utcnow, sa_column_kwargs={"onupdate": datetime.utcnow})

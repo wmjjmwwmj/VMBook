@@ -6,7 +6,13 @@ from database import get_db
 from .functions import hash_pwd, describe_image
 from models import *
 from database import User as UserModel
+from database import Device as DeviceModel
+from database import Journal as JournalModel
+from database import Photo as PhotoModel
+from database import Entry as EntryModel
+
 import shutil
+from uuid import UUID
 
 router = APIRouter()
 
@@ -54,7 +60,7 @@ def create_user(user: UserCreate, db: Session = Depends(get_db)):
 
 # get user info by id
 @router.get("/users/{user_id}", response_model=UserResponse)
-def get_user(user_id: int, db: Session = Depends(get_db)):
+def get_user(user_id: UUID, db: Session = Depends(get_db)):
     user = db.query(UserModel).filter(UserModel.user_id == user_id).first()
     if user is None:
         raise HTTPException(status_code=404, detail="User not found")
@@ -69,7 +75,7 @@ def get_users(db: Session = Depends(get_db)):
 
 # delete user
 @router.delete("/users/{user_id}")
-def delete_user(user_id: int, db: Session = Depends(get_db)):
+def delete_user(user_id: UUID, db: Session = Depends(get_db)):
     user = db.query(UserModel).filter(UserModel.user_id == user_id).first()
     if user is None:
         raise HTTPException(status_code=404, detail="User not found")
@@ -77,15 +83,24 @@ def delete_user(user_id: int, db: Session = Depends(get_db)):
     db.commit()
     return {"message": "User deleted successfully"}
 
-# get all photos from user by id
-@router.get("/users/{user_id}/photos")
-def get_user_photos(user_id: int, db: Session = Depends(get_db), response_model=List[PhotoResponse]):
+
+# update user info
+@router.put("/users/{user_id}", response_model=UserResponse)
+def update_user(user_id: UUID, user_update: UserUpdate, db: Session = Depends(get_db)):
     user = db.query(UserModel).filter(UserModel.user_id == user_id).first()
     if user is None:
         raise HTTPException(status_code=404, detail="User not found")
-    return user.photos
-
-
+    
+    # Update user attributes directly from the UserUpdate model
+    for key, value in user_update.dict(exclude_unset=True).items():
+        if key == "password":
+            setattr(user, "password_hash", hash_pwd(value))
+        else:
+            setattr(user, key, value)
+    
+    db.commit()
+    db.refresh(user)
+    return user
 
 
 
@@ -96,7 +111,7 @@ def get_user_photos(user_id: int, db: Session = Depends(get_db), response_model=
 """
 # get all devices from user by id
 @router.get("/users/{user_id}/devices")
-def get_user_devices(user_id: int, db: Session = Depends(get_db), response_model=List[DeviceResponse]):
+def get_user_devices(user_id: UUID, db: Session = Depends(get_db), response_model=List[DeviceResponse]):
     user = db.query(UserModel).filter(UserModel.user_id == user_id).first()
     if user is None:
         raise HTTPException(status_code=404, detail="User not found")
@@ -104,7 +119,7 @@ def get_user_devices(user_id: int, db: Session = Depends(get_db), response_model
 
 # get details from a specific device of a user by id
 @router.get("/users/{user_id}/devices/{device_id}")
-def get_user_device(user_id: int, device_id: int, db: Session = Depends(get_db), response_model=DeviceResponse):
+def get_user_device(user_id: UUID, device_id: int, db: Session = Depends(get_db), response_model=DeviceResponse):
     user = db.query(UserModel).filter(UserModel.user_id == user_id).first()
     if user is None:
         raise HTTPException(status_code=404, detail="User not found")
@@ -115,7 +130,7 @@ def get_user_device(user_id: int, device_id: int, db: Session = Depends(get_db),
 
 # create a device for a user by id
 @router.post("/users/{user_id}/devices", response_model=DeviceResponse)
-def create_user_device(user_id: int, device: DeviceCreate, db: Session = Depends(get_db)):
+def create_user_device(user_id: UUID, device: DeviceCreate, db: Session = Depends(get_db)):
     user = db.query(UserModel).filter(UserModel.user_id == user_id).first()
     if user is None:
         raise HTTPException(status_code=404, detail="User not found")
@@ -128,7 +143,7 @@ def create_user_device(user_id: int, device: DeviceCreate, db: Session = Depends
 
 # update a device for a user by id
 @router.put("/users/{user_id}/devices/{device_id}", response_model=DeviceResponse)
-def update_user_device(user_id: int, device_id: int, device: DeviceUpdate, db: Session = Depends(get_db)):
+def update_user_device(user_id: UUID, device_id: int, device: DeviceUpdate, db: Session = Depends(get_db)):
     user = db.query(UserModel).filter(UserModel.user_id == user_id).first()
     if user is None:
         raise HTTPException(status_code=404, detail="User not found")
@@ -136,7 +151,7 @@ def update_user_device(user_id: int, device_id: int, device: DeviceUpdate, db: S
     if device is None:
         raise HTTPException(status_code=404, detail="Device not found")
     for key, value in device.dict().items():
-        if key in device.dict(exclude_unset=True):
+        if key in device.dict(exclude_unset=False):
             setattr(device, key, value)
     db.commit()
     db.refresh(device)
@@ -145,7 +160,7 @@ def update_user_device(user_id: int, device_id: int, device: DeviceUpdate, db: S
 
 # delete a device for a user by id
 @router.delete("/users/{user_id}/devices/{device_id}")
-def delete_user_device(user_id: int, device_id: int, db: Session = Depends(get_db)):
+def delete_user_device(user_id: UUID, device_id: int, db: Session = Depends(get_db)):
     user = db.query(UserModel).filter(UserModel.user_id == user_id).first()
     if user is None:
         raise HTTPException(status_code=404, detail="User not found")
@@ -164,7 +179,7 @@ def delete_user_device(user_id: int, device_id: int, db: Session = Depends(get_d
 
 # get all journals from user by id
 @router.get("/users/{user_id}/journals")
-def get_user_journals(user_id: int, db: Session = Depends(get_db), response_model=List[JournalResponse]):
+def get_user_journals(user_id: UUID, db: Session = Depends(get_db), response_model=List[JournalResponse]):
     user = db.query(UserModel).filter(UserModel.user_id == user_id).first()
     if user is None:
         raise HTTPException(status_code=404, detail="User not found")
@@ -172,7 +187,7 @@ def get_user_journals(user_id: int, db: Session = Depends(get_db), response_mode
 
 # create a journal for a user by id
 @router.post("/users/{user_id}/journals", response_model=JournalResponse)
-def create_user_journal(user_id: int, journal: JournalCreate, db: Session = Depends(get_db), response_model=JournalResponse):
+def create_user_journal(user_id: UUID, journal: JournalCreate, db: Session = Depends(get_db), response_model=JournalResponse):
     if db.query(UserModel).filter(UserModel.user_id == user_id).first() is None:
         raise HTTPException(status_code=404, detail="User not found")
     
@@ -184,7 +199,7 @@ def create_user_journal(user_id: int, journal: JournalCreate, db: Session = Depe
 
 # get details from a specific journal of a user by id
 @router.get("/users/{user_id}/journals/{journal_id}")
-def get_user_journal(user_id: int, journal_id: int, db: Session = Depends(get_db), response_model=JournalResponse):
+def get_user_journal(user_id: UUID, journal_id: int, db: Session = Depends(get_db), response_model=JournalResponse):
     user = db.query(UserModel).filter(UserModel.user_id == user_id).first()
     if user is None:
         raise HTTPException(status_code=404, detail="User not found")
@@ -195,7 +210,7 @@ def get_user_journal(user_id: int, journal_id: int, db: Session = Depends(get_db
 
 # update a journal for a user by id
 @router.put("/users/{user_id}/journals/{journal_id}", response_model=JournalResponse)
-def update_user_journal(user_id: int, journal_id: int, journal: JournalUpdate, db: Session = Depends(get_db)):
+def update_user_journal(user_id: UUID, journal_id: int, journal: JournalUpdate, db: Session = Depends(get_db)):
     user = db.query(UserModel).filter(UserModel.user_id == user_id).first()
     if user is None:
         raise HTTPException(status_code=404, detail="User not found")
@@ -206,7 +221,7 @@ def update_user_journal(user_id: int, journal_id: int, journal: JournalUpdate, d
         raise HTTPException(status_code=404, detail="Journal not found")
     
     for key, value in journal.dict().items():
-        if key in journal.dict(exclude_unset=True):
+        if key in journal.dict(exclude_unset=False):
             setattr(journal, key, value)
     db.commit()
     db.refresh(journal)
@@ -216,7 +231,7 @@ def update_user_journal(user_id: int, journal_id: int, journal: JournalUpdate, d
 
 # delete a journal for a user by id
 @router.delete("/users/{user_id}/journals/{journal_id}")
-def delete_user_journal(user_id: int, journal_id: int, db: Session = Depends(get_db)):
+def delete_user_journal(user_id: UUID, journal_id: int, db: Session = Depends(get_db)):
     user = db.query(UserModel).filter(UserModel.user_id == user_id).first()
     if user is None:
         raise HTTPException(status_code=404, detail="User not found")
@@ -239,40 +254,22 @@ def delete_user_journal(user_id: int, journal_id: int, db: Session = Depends(get
 
 # get all photos from user by id
 @router.get("/users/{user_id}/photos")
-def get_user_photos(user_id: int, db: Session = Depends(get_db), response_model=List[PhotoResponse]):
+def get_user_photos(user_id: UUID, db: Session = Depends(get_db), response_model=List[PhotoResponse]):
     user = db.query(UserModel).filter(UserModel.user_id == user_id).first()
     if user is None:
         raise HTTPException(status_code=404, detail="User not found")
     return user.photos
 
-# # create a photo for a user by id
-# @router.post("/users/{user_id}/photos", response_model=PhotoResponse)
-# def create_user_photo(user_id: int, photo: PhotoCreate, db: Session = Depends(get_db)):
-#     if db.query(UserModel).filter(UserModel.user_id == user_id).first() is None:
-#         raise HTTPException(status_code=404, detail="User not found")
-    
-#     url = string2url(photo.base64)
-#     del photo.base64
-    
-#     photo = PhotoModel(**photo.dict(), user_id=user_id, url=url)
-#     db.add(photo)
-#     db.commit()
-#     db.refresh(photo)
-#     return photo
-
-
 # create a photo for a user by id
 @router.post("/users/{user_id}/photos", response_model=PhotoResponse)
-def create_user_photo(user_id: int, photo: PhotoCreate, db: Session = Depends(get_db)):
+def create_user_photo(user_id: UUID, photo_create: PhotoCreate, image: UploadFile = File(...), db: Session = Depends(get_db)):
     if db.query(UserModel).filter(UserModel.user_id == user_id).first() is None:
         raise HTTPException(status_code=404, detail="User not found")
     
-    savepath = os.path.join(f"uploads/{user_id}/", photo.file_name)
-    # mkdir if not exists
+    savepath = os.path.join(f"uploads/{user_id}/", photo_create.file_name)
     os.makedirs(os.path.dirname(savepath), exist_ok=True)
-    upload_file(photo.image, savepath)
-    
-    del photo.image  
+    save_upload_file(image, savepath)
+        
     photo = PhotoModel(**photo.dict(), user_id=user_id, url=savepath)
     db.add(photo)
     db.commit()
@@ -282,7 +279,7 @@ def create_user_photo(user_id: int, photo: PhotoCreate, db: Session = Depends(ge
 
 # get details from a specific photo of a user by id
 @router.get("/users/{user_id}/photos/{photo_id}")
-def get_user_photo(user_id: int, photo_id: int, db: Session = Depends(get_db), response_model=PhotoResponse):
+def get_user_photo(user_id: UUID, photo_id: int, db: Session = Depends(get_db), response_model=PhotoResponse):
     user = db.query(UserModel).filter(UserModel.user_id == user_id).first()
     if user is None:
         raise HTTPException(status_code=404, detail="User not found")
@@ -293,7 +290,7 @@ def get_user_photo(user_id: int, photo_id: int, db: Session = Depends(get_db), r
 
 # update a photo for a user by id
 @router.put("/users/{user_id}/photos/{photo_id}", response_model=PhotoResponse)
-def update_user_photo(user_id: int, photo_id: int, photo: PhotoUpdate, db: Session = Depends(get_db)):
+def update_user_photo(user_id: UUID, photo_id: int, photo: PhotoUpdate, db: Session = Depends(get_db)):
     user = db.query(UserModel).filter(UserModel.user_id == user_id).first()
     if user is None:
         raise HTTPException(status_code=404, detail="User not found")
@@ -304,7 +301,7 @@ def update_user_photo(user_id: int, photo_id: int, photo: PhotoUpdate, db: Sessi
         raise HTTPException(status_code=404, detail="Photo not found")
     
     for key, value in photo.dict().items():
-        if key in photo.dict(exclude_unset=True):
+        if key in photo.dict(exclude_unset=False):
             setattr(photo, key, value)
             
     db.commit()
@@ -315,7 +312,7 @@ def update_user_photo(user_id: int, photo_id: int, photo: PhotoUpdate, db: Sessi
 
 # delete a photo for a user by id
 @router.delete("/users/{user_id}/photos/{photo_id}")
-def delete_user_photo(user_id: int, photo_id: int, db: Session = Depends(get_db)):
+def delete_user_photo(user_id: UUID, photo_id: int, db: Session = Depends(get_db)):
     user = db.query(UserModel).filter(UserModel.user_id == user_id).first()
     if user is None:
         raise HTTPException(status_code=404, detail="User not found")
@@ -331,7 +328,7 @@ def delete_user_photo(user_id: int, photo_id: int, db: Session = Depends(get_db)
 
 # anaylze a photo
 @router.get("/users/{user_id}/photos/{photo_id}/analyze")
-def analyze_photo(user_id: int, photo_id: int, db: Session = Depends(get_db)):
+def analyze_photo(user_id: UUID, photo_id: int, db: Session = Depends(get_db)):
     user = db.query(UserModel).filter(UserModel.user_id == user_id).first()
     if user is None:
         raise HTTPException(status_code=404, detail="User not found")

@@ -7,7 +7,6 @@ class PhotoBase(BaseModel):
     pass
     
 class PhotoCreate(PhotoBase):
-    image: BinaryIO
     device_id: UUID
     location: Optional[str] = None
     file_name: Optional[str] = None
