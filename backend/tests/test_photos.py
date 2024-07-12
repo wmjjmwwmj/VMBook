@@ -59,12 +59,13 @@ def test_create_photo(create_test_device):
     Test case for creating a photo via POST request
     """
     device = create_test_device
+    print("Device:", device)
     
 
     filepath = os.path.join(os.path.dirname(__file__), "testimage.jpg")
     with open(filepath, "rb") as image_file:
         files = {"image": ("testimage.jpg", open(filepath, "rb"), "image/jpeg")}
-        data = {
+        photo_create = {
             "device_id": device["device_id"],
             "location": "Test Location",
             "file_name": "testimage.jpg",
@@ -72,9 +73,9 @@ def test_create_photo(create_test_device):
             "file_type": "jpg"
             }
         data = {
-            "photo_create": json.dumps(data)
+            "photo_create": json.dumps(photo_create)
         }
-    response = requests.post(f"{SERVER_URL}/users/{device['user_id']}/photos", files=files, data=data)
+        response = requests.post(f"{SERVER_URL}/users/{device['user_id']}/photos", files=files, data=data)
         
     print("Response:", response.text)
     

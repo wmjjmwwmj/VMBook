@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Request, UploadFile, File
+from fastapi import APIRouter, Depends, HTTPException, Request, UploadFile, File, Form
 from typing import List
 from sqlmodel import Session
 from database import get_db
@@ -23,18 +23,6 @@ async def save_upload_file(upload_file: UploadFile, destination: str):
             shutil.copyfileobj(upload_file.file, buffer)
     finally:
         upload_file.file.close()
-
-
-
-@router.post("/uploadfile/")
-async def upload_file(file: UploadFile = File(...)):
-    try:
-        # 指定保存的目录和文件名
-        save_path = os.path.join("uploads", file.filename)
-        await save_upload_file(file, save_path)
-        return JSONResponse(status_code=200, content={"message": "File uploaded successfully"})
-    except Exception as e:
-        return JSONResponse(status_code=500, content={"message": "Failed to upload file", "error": str(e)})
 
 
 
@@ -262,15 +250,27 @@ def get_user_photos(user_id: UUID, db: Session = Depends(get_db), response_model
 
 # create a photo for a user by id
 @router.post("/users/{user_id}/photos", response_model=PhotoResponse)
-def create_user_photo(user_id: UUID, photo_create: PhotoCreate, image: UploadFile = File(...), db: Session = Depends(get_db)):
+def create_user_photo(user_id: UUID, photo_create: str = Form(...), image: UploadFile = File(...), db: Session = Depends(get_db)):
     if db.query(UserModel).filter(UserModel.user_id == user_id).first() is None:
         raise HTTPException(status_code=404, detail="User not found")
     
-    savepath = os.path.join(f"uploads/{user_id}/", photo_create.file_name)
-    os.makedirs(os.path.dirname(savepath), exist_ok=True)
-    save_upload_file(image, savepath)
+    try:
+        photo_create_data = json.loads(photo_create)
+        photo_create = PhotoCreate(**photo_create_data)
+    except json.JSONDecodeError:
+        raise HTTPException(status_code=400, detail="Invalid JSON data")
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=f"Invalid data: {e}")
+    
+    savedir = os.path.join(os.path.dirname(__file__), f"uploads/{user_id}/")
+    os.makedirs(os.path.dirname(savedir), exist_ok=True)
+    if image.file:
+        savepath = os.path.join(savedir, image.filename)
+        save_upload_file(image, savepath)
+    else:
+        raise HTTPException(status_code=400, detail="No file uploaded")
         
-    photo = PhotoModel(**photo.dict(), user_id=user_id, url=savepath)
+    photo = PhotoModel(**photo_create.dict(), user_id=user_id, url=savepath)
     db.add(photo)
     db.commit()
     db.refresh(photo)

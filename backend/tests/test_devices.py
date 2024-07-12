@@ -42,8 +42,8 @@ def test_create_device(create_test_user):
         "app_version": "1.0",
         "api_key": f"testapikey{random_string()}",
         }
-    
-    response = requests.post(f"{SERVER_URL}/users/{user['user_id']}/devices", json=device, headers={"Content-Type": "application/json"})
+    user_id = user["user_id"]
+    response = requests.post(f"{SERVER_URL}/users/{user_id}/devices", json=device, headers={"Content-Type": "application/json"})
     
     assert response.status_code == 200
     device_data = response.json()
