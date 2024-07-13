@@ -30,7 +30,8 @@ def create_test_user():
     yield user_data
     
     # Clean up: Delete the user after the test
-    requests.delete(f"{SERVER_URL}/users/{user_data['user_id']}")
+    response = requests.delete(f"{SERVER_URL}/users/{user_data['user_id']}")
+    assert response.status_code == 200
     
     
 def test_create_device(create_test_user):
@@ -51,4 +52,9 @@ def test_create_device(create_test_user):
     assert device_data["device_id"]
     assert device_data["user_id"] == user["user_id"]
     assert device_data["api_key"] == device["api_key"]
-
+    
+    # clean up: delete the device after the test
+    response = requests.delete(f"{SERVER_URL}/users/{device_data['user_id']}/devices/{device_data['device_id']}")
+    print(response.json())
+    assert response.status_code == 200
+    

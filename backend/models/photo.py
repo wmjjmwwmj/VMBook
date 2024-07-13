@@ -27,6 +27,7 @@ class PhotoUpdate(PhotoBase):
 class PhotoResponse(PhotoBase):
     photo_id: UUID
     user_id: UUID
+    device_id: UUID
     time_created: datetime
     time_modified: datetime
     journal_id: Optional[UUID] = None

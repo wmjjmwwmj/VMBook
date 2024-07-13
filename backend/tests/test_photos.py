@@ -30,7 +30,8 @@ def create_test_user():
     yield user_data
     
     # Clean up: Delete the user after the test
-    requests.delete(f"{SERVER_URL}/users/{user_data['user_id']}")
+    response = requests.delete(f"{SERVER_URL}/users/{user_data['user_id']}")
+    assert response.status_code == 200
 
 @pytest.fixture(scope="function")
 def create_test_device(create_test_user):
@@ -52,7 +53,9 @@ def create_test_device(create_test_user):
     yield device_data
     
     # Clean up: Delete the device after the test
-    requests.delete(f"{SERVER_URL}/devices/{device_data['device_id']}")
+    response = requests.delete(f"{SERVER_URL}/users/{device_data['user_id']}/devices/{device_data['device_id']}")
+    print(response.json())
+    assert response.status_code == 200
 
 def test_create_photo(create_test_device):
     """
@@ -83,8 +86,49 @@ def test_create_photo(create_test_device):
     
     photo_data = response.json()
     assert photo_data["photo_id"]
-    assert "url" in photo_data  # Changed from photo_url to url
     assert photo_data["device_id"] == photo_create["device_id"]
     
     # Clean up: Delete the photo after the test
-    requests.delete(f"{SERVER_URL}/photos/{photo_data['photo_id']}")
+    response = requests.delete(f"{SERVER_URL}/users/{photo_data['user_id']}/photos/{photo_data['photo_id']}")
+    assert response.status_code == 200
+    
+    
+def test_analyze_photo(create_test_device):
+    device = create_test_device
+    print(device)
+    
+    
+    # upload a photo
+    filepath = os.path.join(os.path.dirname(__file__), "testimage.jpg")
+    with open(filepath, "rb") as image_file:
+        files = {"image": ("testimage.jpg", open(filepath, "rb"), "image/jpeg")}
+        photo_create = {
+            "device_id": device["device_id"],
+            "location": "Test Location",
+            "file_name": "testimage.jpg",
+            "file_size": 1024,
+            "file_type": "jpg"
+            }
+        data = {
+            "photo_create": json.dumps(photo_create)
+        }
+        response = requests.post(f"{SERVER_URL}/users/{device['user_id']}/photos", files=files, data=data)
+        
+    print("Response:", response.text)
+    assert response.status_code == 200
+    photo_data = response.json()
+    assert photo_data["user_id"] == device["user_id"]
+    assert photo_data["file_name"] == photo_create["file_name"]
+    assert photo_data["photo_id"]
+    assert photo_data["device_id"] == photo_create["device_id"]
+    
+    # analyze the photo
+    response = requests.get(f"{SERVER_URL}/users/{photo_data['user_id']}/photos/{photo_data['photo_id']}/analyze")
+    print("Response:", response.text)
+    assert response.status_code == 200
+    photo_data = response.json()
+    assert photo_data["description"]
+    
+    # delete the photo
+    response = requests.delete(f"{SERVER_URL}/users/{photo_data['user_id']}/photos/{photo_data['photo_id']}")
+    assert response.status_code == 200

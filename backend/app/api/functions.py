@@ -3,7 +3,7 @@ import dashscope
 import time
 import os
 from dotenv import load_dotenv
-import base64, uuid, io
+import base64, uuid, io, json
 from PIL import Image
 
 load_dotenv()
@@ -25,7 +25,11 @@ def describe_image(image_url):
     
     response = dashscope.MultiModalConversation.call(model='qwen-vl-plus',
                                                       messages=messages)
-    return response
+
+    # Extracting the description
+    description = response["output"]["choices"][0]["message"]["content"][0]["text"]
+    print(description)
+    return description
 
 
 def hash_pwd(password: str) -> str:

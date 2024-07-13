@@ -3,6 +3,8 @@ import uuid
 from datetime import datetime
 from typing import Optional, List
 from sqlmodel import SQLModel, Field, Relationship, create_engine, Session
+from sqlalchemy import Column
+from sqlalchemy.dialects.mysql import LONGTEXT
 import os
 from dotenv import load_dotenv
 
@@ -75,7 +77,7 @@ class Journal(SQLModel, table=True):
     journal_id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     user_id: uuid.UUID = Field(foreign_key="users.user_id")
     title: str = Field(max_length=255, nullable=False)
-    description: Optional[str] = Field(max_length=255, default=None)
+    description: Optional[str] = Field(default=None, sa_column=Column(LONGTEXT))
     time_created: datetime = Field(default_factory=datetime.utcnow)
     time_modified: datetime = Field(default_factory=datetime.utcnow, sa_column_kwargs={"onupdate": datetime.utcnow})
 
@@ -89,12 +91,12 @@ class Photo(SQLModel, table=True):
 
     photo_id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     user_id: uuid.UUID = Field(foreign_key="users.user_id")
-    journal_id: uuid.UUID = Field(foreign_key="journals.journal_id")
+    journal_id: Optional[uuid.UUID] = Field(foreign_key="journals.journal_id")
     device_id: uuid.UUID = Field(foreign_key="devices.device_id")
     time_created: datetime = Field(default_factory=datetime.utcnow)
     time_modified: datetime = Field(default_factory=datetime.utcnow, sa_column_kwargs={"onupdate": datetime.utcnow})
     location: Optional[str] = Field(max_length=255, default=None)
-    description: Optional[str] = Field(max_length=255, default=None)
+    description: Optional[str] = Field(default=None, sa_column=Column(LONGTEXT))
     url: str = Field(max_length=255)
     starred: bool = Field(default=False)
     file_name: Optional[str] = Field(max_length=255, default=None)
@@ -116,7 +118,7 @@ class Entry(SQLModel, table=True):
     time_created: datetime = Field(default_factory=datetime.utcnow)
     time_modified: datetime = Field(default_factory=datetime.utcnow, sa_column_kwargs={"onupdate": datetime.utcnow})
     position: Optional[str] = Field(max_length=255, default=None)
-    content: Optional[str] = Field(default=None)
+    content: Optional[str] = Field(default=None, sa_column=Column(LONGTEXT))
 
     user: "User" = Relationship(back_populates="entries")
     journal: "Journal" = Relationship(back_populates="entries")
