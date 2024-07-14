@@ -1,3 +1,5 @@
+## Have permission issue, even in Administrator Mode
+
 import serial
 import struct
 
