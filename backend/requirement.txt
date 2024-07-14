@@ -1,0 +1,6 @@
+fastapi
+uvicorn
+sqlmodel
+mysql-connector-python
+Pillow
+python-dotenv

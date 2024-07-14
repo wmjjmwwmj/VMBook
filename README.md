@@ -5,7 +5,7 @@ Record your life on the fly!
 
 1. Capture important moments and summarize visual content. 
 2. Query your Memobook to provide life suggestions.
-3. Reflection on your day. 吾日三省吾身
+3. Reflection on your day. 
 4. Timestamp and GPS location
 
 
@@ -15,9 +15,9 @@ Record your life on the fly!
 
 Stacks: ESP32S3 Sense with Micro-python 
 
-- [ ] Manual Capture photo
+- [x] Internet connection
+- [x] Manually Capture photo
 - [ ] Photo summarize
-- [ ] Storage data to db
  
 
 ### Frontend
@@ -30,19 +30,13 @@ Stacks: React
 
 ### Backend
 
-- Stacks: django, sqlite3
+Stacks: fastapi, mysql
 
-- [ ] Database design: journal, picture
+- [x] Database design
+- [x] Endpoint design
 - [ ] Journal Generate
 
 
+## Future Work
 
-## 使用场景
-
-1. 小红书图文一键生成: 狗狗博主
-2. 
-
-
-手动模式
-定时模式
-
+- Interactive image summary
