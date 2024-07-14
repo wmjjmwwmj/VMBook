@@ -129,6 +129,14 @@ def test_analyze_photo(create_test_device):
     photo_data = response.json()
     assert photo_data["description"]
     
+    
+    # retrieve the photo
+    response = requests.get(f"{SERVER_URL}/users/{photo_data['user_id']}/photos/{photo_data['photo_id']}")
+    print("Response:", response.text)
+    assert response.status_code == 200
+    new_photo_data = response.json()
+    assert new_photo_data["photo_id"] == photo_data["photo_id"]
+    
     # delete the photo
     response = requests.delete(f"{SERVER_URL}/users/{photo_data['user_id']}/photos/{photo_data['photo_id']}")
     assert response.status_code == 200

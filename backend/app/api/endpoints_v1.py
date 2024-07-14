@@ -344,7 +344,8 @@ def analyze_photo(user_id: UUID, photo_id: UUID, db: Session = Depends(get_db)):
     if photo is None:
         raise HTTPException(status_code=404, detail="Photo not found")
     
-    description = describe_image(photo.url)
+    description = describe_image(photo.url) # this function is taking 7-8 seconds to return
+    
     photo.description = description
     db.commit()
     db.refresh(photo)
