@@ -29,4 +29,5 @@ This user manual provides instructions for using the **VMBook** to capture and u
 - The server URL for uploading photos is predefined; ensure the server is running and accessible.
 
 ## TODO
-[  ] Add additional button to control power in Battery-powered mode.
+- [ ] Add additional button to control power in Battery-powered mode.
+- [ ] Add user voice input functionality so that users can enhance images with background and emotional descriptions.
