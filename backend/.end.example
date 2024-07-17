@@ -1,0 +1,2 @@
+DB_URL = mysql+mysqlconnector://username:password@server:port/dbname
+QWEN_API_KEY = your-api-key

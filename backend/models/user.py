@@ -18,6 +18,10 @@ class UserUpdate(UserBase):
     bio: Optional[str] = None
     
     
+class UserLogin(UserBase):
+    email: str
+    password: str
+    
 class UserResponse(UserBase):
     user_id: UUID
     username: str

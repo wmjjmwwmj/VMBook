@@ -19,6 +19,11 @@ Start the MySQL server in the console:
 mysqld --console
 ```
 
+Environment Variables:
+- Rename `.env.example` to `.env`.
+- Configure necessary environment variables such as your LLM API.
+
+
 ### Create DB
 
 Run `create_tables.py` in `scripts` folder.

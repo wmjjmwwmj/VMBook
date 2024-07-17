@@ -5,6 +5,7 @@ import os
 from dotenv import load_dotenv
 import base64, uuid, io, json
 from PIL import Image
+from passlib.context import CryptContext
 
 load_dotenv()
 
@@ -33,7 +34,8 @@ def describe_image(image_url):
 
 
 def hash_pwd(password: str) -> str:
-    return hash(password)
+    pwd_context = CryptContext(schemes=["sha256_crypt"], deprecated="auto")
+    return pwd_context.hash(password)
 
 # def string2url(base64string: str) -> str:
 #     if base64string.startswith('data:image/jpeg;base64,'):

@@ -13,8 +13,42 @@ from database import Entry as EntryModel
 
 import shutil, json, os, sys
 from uuid import UUID
+from dotenv import load_dotenv
+from jose import jwt
+from passlib.context import CryptContext
+from datetime import datetime, timedelta
+from fastapi.security import OAuth2PasswordBearer
+
+load_dotenv()
+
+SECRET_KEY = os.getenv("SECRET_KEY")
+ALGORITHM = os.getenv("ALGORITHM")
 
 router = APIRouter()
+
+pwd_context = CryptContext(schemes=["sha256_crypt"], deprecated="auto")
+# OAuth2 scheme
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+
+
+async def get_current_user(token: str = Depends(oauth2_scheme)):
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        email: str = payload.get("email")
+        if email is None:
+            raise credentials_exception
+    except JWTError:
+        raise credentials_exception
+    user = db.query(UserModel).filter(UserModel.email == email).first()
+    if user is None:
+        raise credentials_exception
+    return user
+
 
 # 保存上传的文件到指定目录
 def save_upload_file(upload_file: UploadFile, destination: str):
@@ -36,13 +70,39 @@ def save_upload_file(upload_file: UploadFile, destination: str):
 ------------------------------------------------------------------------------
 """
 
+
+@router.post('/token')
+def login(user_login: UserLogin, db: Session = Depends(get_db)):
+    
+    if not user_login.email or not user_login.password:
+        raise HTTPException(status_code=400, detail="Invalid email or password")
+
+    user = db.query(UserModel).filter(UserModel.email == user_login.email).first()
+    if user is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    # check password
+    if not pwd_context.verify(user_login.password, user.password_hash):
+        raise HTTPException(status_code=400, detail="Wrong password")
+    
+    # password is correct, create a token
+    payload = {
+        "email": user.email,
+        "exp": datetime.utcnow() + timedelta(days=1)
+    }
+    token = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
+    
+    return {"access_token": token, "token_type": "bearer"}
+    
+    
+
 # create a user
 @router.post("/users/", response_model=UserResponse)
 def create_user(user: UserCreate, db: Session = Depends(get_db)):
     if db.query(UserModel).filter(UserModel.email == user.email).first():
         raise HTTPException(status_code=400, detail="Email already registered")
     
-    hashed_pwd = hash_pwd(user.password)
+    # hashed_pwd = hash_pwd(user.password)
+    hashed_pwd = pwd_context.hash(user.password)
     del user.password
     new_user = UserModel(**user.dict(), password_hash=hashed_pwd)
     db.add(new_user)
@@ -86,7 +146,7 @@ def update_user(user_id: UUID, user_update: UserUpdate, db: Session = Depends(ge
     # Update user attributes directly from the UserUpdate model
     for key, value in user_update.dict(exclude_unset=True).items():
         if key == "password":
-            setattr(user, "password_hash", hash_pwd(value))
+            setattr(user, "password_hash", pwd_context.hash(value))
         else:
             setattr(user, key, value)
     
