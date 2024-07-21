@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
-import MyLayout from '../components/Layout';
+import React, { useState } from 'react'; // 加花括号是命名导入 export const useState = ...;
+import MyLayout from '../../components/Layout';
 
 import { CheckCard } from '@ant-design/pro-components';
-import { ConfigProvider, Flex, Image, Card, List, Avatar, Radio, Space,  Tooltip ,Divider } from 'antd';
+import { DownloadOutlined,DeleteOutlined,FileAddOutlined,AntDesignOutlined,SendOutlined } from '@ant-design/icons';
+import { ConfigProvider, Flex, Image, Card, List, Avatar, Radio, Space,  Tooltip ,Divider,Button } from 'antd';
+import SearchBar   from '../../components/SearchBar/SearchBar';
 
 type PaginationPosition = 'top' | 'bottom' | 'both';
 
@@ -40,14 +42,15 @@ const UserPhotoGalleryContent: React.FC = () => {
         { title: 'Time', description: '', imageSrc: 'https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png' },
         { title: 'Time', description: '', imageSrc: 'https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png' },
         { title: 'Time', description: '', imageSrc: 'https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png' },
-        { title: 'Time', description: '121315', imageSrc: 'https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png' },
+        { title: 'Time', description: '', imageSrc: 'https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png' },
         { title: 'Time', description: '', imageSrc: 'https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png' },
     ];
 
     const [position, setPosition] = useState<PaginationPosition>('bottom');
     const [align, setAlign] = useState<PaginationAlign>('center');
     return (
-        <Space>
+        <Space direction="vertical" size="large" style={{ width: '100%', justifyContent: 'center' }}>
+            
             <List
                 grid={{
                     gutter: 2, // space between columns
@@ -59,11 +62,13 @@ const UserPhotoGalleryContent: React.FC = () => {
                     xxl: 8,
                     }}
                 size="large"
+                
                 pagination={{
                     onChange: (page) => {
                         console.log(page);
                     },
-                    pageSize: 20,
+                    pageSize: 16,
+                    // position: 'top'
                     }}
                 dataSource={data}
                 renderItem={(item) => (
@@ -91,16 +96,59 @@ const UserPhotoGalleryContent: React.FC = () => {
                     </List.Item>
                 )}
             />
+            
         </Space>
     );
 };
 
+const GalleryButtons: React.FC = () => {
+    const [loadings, setLoadings] = useState<boolean[]>([]);
 
+    const enterLoading = (index: number) => {
+      setLoadings((prevLoadings) => {
+        const newLoadings = [...prevLoadings];
+        newLoadings[index] = true;
+        return newLoadings;
+      });
+  
+      setTimeout(() => {
+        setLoadings((prevLoadings) => {
+          const newLoadings = [...prevLoadings];
+          newLoadings[index] = false;
+          return newLoadings;
+        });
+      }, 6000);
+    };
+    return (
+        // <Space direction="vertical" size="large" style={{ width: '100%', justifyContent: 'center' }}>
+        <Space align="center" style={{ width: '100%', justifyContent: 'left' }}>
+     
+        <Button type="primary" shape="round" icon={<DeleteOutlined />} size={'middle'}>
+          Delete
+        </Button>
+        <Button type="primary" shape="round" icon={<FileAddOutlined />} size={'middle'}>
+          Add
+        </Button>
+        <Button type="primary" shape="round" icon={<DownloadOutlined />} size={'middle'}>
+          Download
+        </Button>
+
+        <Button type="primary" shape="round" icon={<SendOutlined /> } size={'middle'} loading={loadings[0]} onClick={() => enterLoading(0)}>
+            Generate
+        </Button>
+        </Space>
+    );
+}
 
 const UserPhotoGallery: React.FC = () => {
     return (
         <MyLayout>
-            <UserPhotoGalleryContent />
+            <Space direction="vertical" size="large">
+            <SearchBar />
+            <GalleryButtons />
+                <UserPhotoGalleryContent />
+                
+            </Space>
         </MyLayout>
     );
 };
