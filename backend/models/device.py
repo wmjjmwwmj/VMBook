@@ -7,7 +7,7 @@ class DeviceBase(BaseModel):
     pass
 
 class DeviceCreate(DeviceBase):
-    device_name: Optional[str] = None
+    device_name: str
     device_type: Optional[str] = None
     api_key: str
     os_type: Optional[str] = None
