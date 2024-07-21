@@ -20,7 +20,10 @@ const MenuButton = () => {
       <FloatButton
         icon={<HomeOutlined />}
         tooltip="Home"
-        onClick={() => console.log("Navigating to Home")}
+        onClick={() => {
+            console.log("Navigating to Home");
+            window.location.href = "/";
+        }}
       />
       <FloatButton
         icon={<SettingOutlined />}
@@ -35,7 +38,10 @@ const MenuButton = () => {
       <FloatButton
         icon={<BookOutlined />}
         tooltip="Journal List View"
-        onClick={() => console.log("Navigating to Journal List View")}
+        onClick={() => {
+            console.log("Navigating to Journal List View");
+            window.location.href = "/journals";
+        }}
       />
       <FloatButton
         icon={<PlusOutlined />}
