@@ -13,9 +13,9 @@ const HomeContent: React.FC = () => {
 
 const Home: React.FC = () => {
     return (
-        <div>
-            <MyLayout content={<HomeContent/>} />
-        </div>
+        <MyLayout>
+            <HomeContent />
+        </MyLayout>
     );
 };
 
