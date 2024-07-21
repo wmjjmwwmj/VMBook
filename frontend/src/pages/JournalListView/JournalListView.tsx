@@ -1,19 +1,32 @@
 import React from 'react';
 import MyLayout from '../../components/Layout';
-import { Avatar, List, Space } from 'antd';
-import { LikeOutlined, MessageOutlined, StarOutlined } from '@ant-design/icons';
+import { Avatar, List, Space, Input, DatePicker, Button, Radio, Select, Tag } from 'antd';
+import { StarOutlined } from '@ant-design/icons';
+
+const { RangePicker } = DatePicker;
 
 const SearchBar = () => (
-    <div>
-        <input type="text" placeholder="Search" />
-        <button>Search</button>
-    </div>
+    <Space>
+        <Radio.Group buttonStyle='solid'>
+            <Radio.Button value="all">All</Radio.Button>
+            <Radio.Button value="starred">Starred</Radio.Button>
+        </Radio.Group>
+        <RangePicker showTime />
+        <Select placeholder='Device'>
+            <Select.Option value="laptop">Laptop</Select.Option>
+            <Select.Option value="tablet">Tablet</Select.Option>
+            <Select.Option value="phone">Phone</Select.Option>
+        </Select>
+        <Input placeholder="Search Content..." />
+        <Button type="primary">Filter</Button>
+    </Space>
 );
 
 const data = Array.from({ length: 23 }).map((_, i) => ({
     href: 'https://ant.design',
     title: `ant design part ${i}`,
-    avatar: `https://api.dicebear.com/7.x/miniavs/svg?seed=${i}`,
+    datetime: '2021-09-01',
+    tags: ['nice', 'developer'],
     description:
         'Ant Design, a design language for background applications, is refined by Ant UED Team.',
     content:
@@ -39,31 +52,32 @@ const JournalListContent: React.FC = () => (
                 console.log(page);
             },
             pageSize: 3,
+            position: 'bottom',
+            align: 'center'
         }}
         dataSource={data}
-        footer={
-            <div>
-                <b>ant design</b> footer part
-            </div>
-        }
         renderItem={(item) => (
             <List.Item
                 key={item.title}
                 actions={[
-                    <IconText icon={StarOutlined} text="156" key="list-vertical-star-o" />,
-                    <IconText icon={LikeOutlined} text="156" key="list-vertical-like-o" />,
-                    <IconText icon={MessageOutlined} text="2" key="list-vertical-message" />,
+                    <IconText icon={StarOutlined} text={item.datetime} key="list-vertical-star-o" />,
+                    item.tags.map((tag, index) => (
+                        <Tag color="blue" key={index}>
+                            {tag}
+                        </Tag>
+                    )),
                 ]}
                 extra={
-                    <img
-                        width={272}
-                        alt="logo"
-                        src="https://gw.alipayobjects.com/zos/rmsportal/mqaQswcyDLcXyDKnZfES.png"
-                    />
+                    <div style={{ overflow: 'hidden'}}>
+                        <img
+                            width="200vw"
+                            alt="logo"
+                            src="https://gw.alipayobjects.com/zos/rmsportal/mqaQswcyDLcXyDKnZfES.png"
+                        />
+                    </div>
                 }
             >
                 <List.Item.Meta
-                    avatar={<Avatar src={item.avatar} />}
                     title={<a href={item.href}>{item.title}</a>}
                     description={item.description}
                 />
@@ -78,12 +92,10 @@ const JournalListContent: React.FC = () => (
 
 const JournalListView: React.FC = () => {
     return (
-        <div>
-            <MyLayout>
-                <SearchBar />
-                <JournalListContent />
-            </MyLayout>
-        </div>
+        <MyLayout>
+            <SearchBar />
+            <JournalListContent />
+        </MyLayout>
     );
 };
 
