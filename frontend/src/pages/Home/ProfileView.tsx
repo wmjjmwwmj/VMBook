@@ -1,5 +1,6 @@
 import React from 'react';
-import { Image, Space } from 'antd';
+import { Divider, Image, Space } from 'antd';
+import Title from 'antd/es/typography/Title';
 
 const userData = {
     "username": "octocate",
@@ -12,7 +13,8 @@ const ProfileView: React.FC = () => {
     return (
         <Space direction='vertical' align='center'>
             <Image src={userData.profile_picture} alt="Profile picture" style={{ borderRadius: '50%', width: '90%' }} preview={false} />
-            <h2>{userData.username}</h2>
+            <Title level={1}>{userData.username}</Title>
+            <Divider plain>Text</Divider>
             <span>{userData.email}</span>
             <span>Joined on 2021-09-01</span>
         </Space>

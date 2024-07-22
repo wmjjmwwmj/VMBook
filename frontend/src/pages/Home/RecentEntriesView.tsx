@@ -1,5 +1,5 @@
 import React from 'react';
-import { List, Card, Image } from 'antd';
+import { List, Card } from 'antd';
 
 
 const RecentEntriesView: React.FC = () => {
@@ -43,12 +43,14 @@ const RecentEntriesView: React.FC = () => {
             dataSource={entries}
             renderItem={(Item) => (
                 <List.Item>
+                    <a href={Item.link}>
                     <Card
                         hoverable
-                        cover={<a href={Item.link}><Image src={Item.cover} width="100%" preview={false} style={{borderRadius:'10px 10px 0 0'}}/></a>}
+                        cover={<img src={Item.cover} width="100%" alt={Item.link}/>}
                     >
                         <Card.Meta title={Item.title} description={Item.datetime} />
                     </Card>
+                    </a>
                 </List.Item>
             )}
         />
