@@ -33,7 +33,10 @@ const MenuButton = () => {
       <FloatButton
         icon={<PictureOutlined />}
         tooltip="Gallery View"
-        onClick={() => console.log("Navigating to Gallery View")}
+        onClick={() => {
+          console.log("Navigating to Gallery View");
+          window.location.href = "/gallery";
+      }}
       />
       <FloatButton
         icon={<BookOutlined />}
@@ -46,7 +49,10 @@ const MenuButton = () => {
       <FloatButton
         icon={<PlusOutlined />}
         tooltip="New Journal"
-        onClick={() => console.log("Creating a new Journal")}
+        onClick={() => {
+          console.log("Navigating to New Journal");
+          window.location.href = "/journalview";
+      }}
       />
     </FloatButton.Group>
   );
