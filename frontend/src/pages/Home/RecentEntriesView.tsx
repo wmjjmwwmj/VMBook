@@ -45,7 +45,7 @@ const RecentEntriesView: React.FC = () => {
                 <List.Item>
                     <Card
                         hoverable
-                        cover={<a href={Item.link}><Image src={Item.cover} preview={false} style={{borderRadius:'10px 10px 0 0'}}/></a>}
+                        cover={<a href={Item.link}><Image src={Item.cover} width="100%" preview={false} style={{borderRadius:'10px 10px 0 0'}}/></a>}
                     >
                         <Card.Meta title={Item.title} description={Item.datetime} />
                     </Card>
