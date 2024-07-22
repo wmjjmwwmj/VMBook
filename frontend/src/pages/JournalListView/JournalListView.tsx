@@ -1,6 +1,6 @@
 import React from 'react';
 import MyLayout from '../../components/Layout';
-import { Avatar, List, Space, Input, DatePicker, Button, Radio, Select, Tag } from 'antd';
+import { List, Space, Input, DatePicker, Button, Radio, Select, Tag } from 'antd';
 import { StarOutlined } from '@ant-design/icons';
 
 const { RangePicker } = DatePicker;

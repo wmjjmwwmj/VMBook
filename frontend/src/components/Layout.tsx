@@ -17,9 +17,9 @@ const MyLayout: React.FC<MyLayoutProps> = ({ children }) => {
   return (
     <Layout>
       <Header style={{ display: 'flex', alignItems: 'center' }}>
-        <div style={{ color: 'white', fontSize: 24 }}>
+        <a href="/" style={{ color: 'white', fontSize: 24 }}>
           <AndroidFilled /> VMBook
-        </div>
+        </a>
       </Header>
       <Content style={{ padding: '0 24px' }}>
         <Breadcrumb style={{ margin: '16px 0' }}>
