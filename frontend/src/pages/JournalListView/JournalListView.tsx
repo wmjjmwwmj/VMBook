@@ -1,26 +1,21 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import MyLayout from '../../components/Layout';
-import { List, Space, Input, DatePicker, Button, Radio, Select, Tag } from 'antd';
+import SearchBar, { SearchFilters } from '../../components/SearchBar/SearchBar';
+import { List, Space, Tag, Skeleton, Divider, FloatButton, message } from 'antd';
 import { StarOutlined } from '@ant-design/icons';
+import InfiniteScroll from 'react-infinite-scroll-component';
+import getUserJournal from '../../utils/journal';
 
-const { RangePicker } = DatePicker;
 
-const SearchBar = () => (
-    <Space>
-        <Radio.Group buttonStyle='solid'>
-            <Radio.Button value="all">All</Radio.Button>
-            <Radio.Button value="starred">Starred</Radio.Button>
-        </Radio.Group>
-        <RangePicker showTime />
-        <Select placeholder='Device'>
-            <Select.Option value="laptop">Laptop</Select.Option>
-            <Select.Option value="tablet">Tablet</Select.Option>
-            <Select.Option value="phone">Phone</Select.Option>
-        </Select>
-        <Input placeholder="Search Content..." />
-        <Button type="primary">Filter</Button>
-    </Space>
-);
+interface JournalItem {
+    href: string;
+    title: string;
+    datetime: string;
+    tags: string[];
+    description: string;
+    content: string;
+}
+
 
 const data = Array.from({ length: 23 }).map((_, i) => ({
     href: 'https://ant.design',
@@ -42,59 +37,95 @@ const IconText = ({ icon, text }: { icon: React.FC; text: string }) => (
 );
 
 
+const [filters, setFilters] = React.useState<SearchFilters>({
+    starred: false,
+    device: undefined,
+    fromDate: null,
+    toDate: null,
+    content: '',
+});
 
-const JournalListContent: React.FC = () => (
-    <List
-        itemLayout="vertical"
-        size="large"
-        pagination={{
-            onChange: (page) => {
-                console.log(page);
-            },
-            pageSize: 3,
-            position: 'bottom',
-            align: 'center'
-        }}
-        dataSource={data}
-        renderItem={(item) => (
-            <List.Item
-                key={item.title}
-                actions={[
-                    <IconText icon={StarOutlined} text={item.datetime} key="list-vertical-star-o" />,
-                    item.tags.map((tag, index) => (
-                        <Tag color="blue" key={index}>
-                            {tag}
-                        </Tag>
-                    )),
-                ]}
-                extra={
-                    <div style={{ overflow: 'hidden'}}>
-                        <img
-                            width="200vw"
-                            alt="logo"
-                            src="https://gw.alipayobjects.com/zos/rmsportal/mqaQswcyDLcXyDKnZfES.png"
-                        />
-                    </div>
-                }
-            >
-                <List.Item.Meta
-                    title={<a href={item.href}>{item.title}</a>}
-                    description={item.description}
+const JournalListContent: React.FC = () => {
+
+    const [loading, setLoading] = React.useState(false);
+    const [journalData, setJournalData] = React.useState<JournalItem[]>([]);
+
+
+    const loadMoreData = async () => {
+        if (loading) {
+            return;
+          }
+        setLoading(true);
+        message.success('Load more data ...');
+        const data = await getUserJournal( 'userid' ,filters);
+        setJournalData([...journalData, ...data]);
+        setLoading(false);
+    };
+
+    useEffect(() => {
+        loadMoreData();
+      }, []);
+
+    return (
+        <div>
+            <InfiniteScroll dataLength={journalData.length}
+                next={loadMoreData}
+                hasMore={true}
+                loader={<Skeleton paragraph={{ rows: 1 }} active />}
+                endMessage={<Divider plain>It is all, nothing more 🤐</Divider>}
+                >
+                <List
+                    itemLayout="vertical"
+                    size="large"
+                    dataSource={journalData}
+                    renderItem={(item) => (
+                        <List.Item
+                            key={item.title}
+                            actions={[
+                                <IconText icon={StarOutlined} text={item.datetime} key="list-vertical-star-o" />,
+                                item.tags.map((tag, index) => (
+                                    <Tag color="blue" key={index}>
+                                        {tag}
+                                    </Tag>
+                                )),
+                            ]}
+                            extra={
+                                <div style={{ overflow: 'hidden' }}>
+                                    <img
+                                        width="200vw"
+                                        alt="logo"
+                                        src="https://gw.alipayobjects.com/zos/rmsportal/mqaQswcyDLcXyDKnZfES.png"
+                                    />
+                                </div>
+                            }
+                        >
+                            <List.Item.Meta
+                                title={<a href={item.href}>{item.title}</a>}
+                                description={item.description}
+                            />
+                            {item.content}
+                        </List.Item>
+                    )}
                 />
-                {item.content}
-            </List.Item>
-        )}
-    />
-);
+            </InfiniteScroll>
+        </div>
+    );
+};
 
 
+const handleFilterChange = (filters: SearchFilters) => {
+    console.log('Filters changed:', filters);
+    setFilters(filters);
+    // Perform actions based on updated filters
+};
 
 
 const JournalListView: React.FC = () => {
     return (
         <MyLayout>
-            <SearchBar />
+            <SearchBar onFilterChange={handleFilterChange} />
             <JournalListContent />
+            <FloatButton.BackTop  style={{ right: 94 }}/>
         </MyLayout>
     );
 };

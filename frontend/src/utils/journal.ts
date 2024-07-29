@@ -8,18 +8,27 @@ interface JournalEntry {
 }
 
 interface GetUserJournalOptions {
+  starred: boolean;
+  device: string | undefined;
+  fromDate: string | null;
+  toDate: string | null;
+  content: string;
   limit?: number;
-  fromDate?: string;
-  toDate?: string;
 }
 
 async function getUserJournal(userId: string, options?: GetUserJournalOptions): Promise<JournalEntry[]> {
   try {
-    let url = `/api/journal/${userId}`;
+    let url = `/users/${userId}/journals/`;
 
     // 构建查询参数
     if (options) {
       const params = new URLSearchParams();
+      if (options.starred) {
+        params.append('starred', 'true');
+      }
+      if (options.device) {
+        params.append('device', options.device);
+      }
       if (options.limit) {
         params.append('limit', options.limit.toString());
       }
