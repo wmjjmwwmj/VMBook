@@ -5,6 +5,7 @@ import { CheckCard } from '@ant-design/pro-components';
 import { DownloadOutlined,DeleteOutlined,FileAddOutlined,AntDesignOutlined,SendOutlined } from '@ant-design/icons';
 import { ConfigProvider, Flex, Image, Card, List, Avatar, Radio, Space,  Tooltip ,Divider,Button } from 'antd';
 import SearchBar   from '../../components/SearchBar/SearchBar';
+import axios from 'axios';
 
 type PaginationPosition = 'top' | 'bottom' | 'both';
 
@@ -46,8 +47,7 @@ const UserPhotoGalleryContent: React.FC = () => {
         { title: 'Time', description: '', imageSrc: 'https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png' },
     ];
 
-    const [position, setPosition] = useState<PaginationPosition>('bottom');
-    const [align, setAlign] = useState<PaginationAlign>('center');
+    
     return (
         <Space direction="vertical" size="large" style={{ width: '100%', justifyContent: 'center' }}>
             
@@ -119,17 +119,43 @@ const GalleryButtons: React.FC = () => {
         });
       }, 6000);
     };
+    const handleClick = () => {
+      // Make API call to server here
+      // Example:
+      fetch('/api/endpoint', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({}),
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          // Handle response from server here
+          console.log(data);
+        })
+        .catch((error) => {
+          // Handle error here
+          console.error(error);
+        });
+    };
+
+    const deletePhotos = () => { // delete photos
+        
+    };
+
+
     return (
         // <Space direction="vertical" size="large" style={{ width: '100%', justifyContent: 'center' }}>
         <Space align="center" style={{ width: '100%', justifyContent: 'left' }}>
      
-        <Button type="primary" shape="round" icon={<DeleteOutlined />} size={'middle'}>
+        <Button type="primary" shape="round" icon={<DeleteOutlined />} size={'middle'} onClick={handleClick}>
           Delete
         </Button>
-        <Button type="primary" shape="round" icon={<FileAddOutlined />} size={'middle'}>
+        <Button type="primary" shape="round" icon={<FileAddOutlined />} size={'middle'} onClick={handleClick}>
           Add
         </Button>
-        <Button type="primary" shape="round" icon={<DownloadOutlined />} size={'middle'}>
+        <Button type="primary" shape="round" icon={<DownloadOutlined />} size={'middle'} onClick={handleClick}>
           Download
         </Button>
 
