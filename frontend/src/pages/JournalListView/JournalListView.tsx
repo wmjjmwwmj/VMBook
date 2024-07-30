@@ -4,18 +4,7 @@ import SearchBar, { SearchFilters } from '../../components/SearchBar/SearchBar';
 import { List, Space, Tag, Skeleton, Divider, FloatButton, message } from 'antd';
 import { StarOutlined } from '@ant-design/icons';
 import InfiniteScroll from 'react-infinite-scroll-component';
-import getUserJournal from '../../utils/journal';
-
-
-interface JournalItem {
-    href: string;
-    title: string;
-    datetime: string;
-    tags: string[];
-    description: string;
-    content: string;
-}
-
+import getUserJournal, {JournalEntry, GetUserJournalOptions} from '../../utils/journal';
 
 const data = Array.from({ length: 23 }).map((_, i) => ({
     href: 'https://ant.design',
@@ -48,7 +37,7 @@ const [filters, setFilters] = React.useState<SearchFilters>({
 const JournalListContent: React.FC = () => {
 
     const [loading, setLoading] = React.useState(false);
-    const [journalData, setJournalData] = React.useState<JournalItem[]>([]);
+    const [journalData, setJournalData] = React.useState<JournalEntry[]>([]);
 
 
     const loadMoreData = async () => {
@@ -83,7 +72,7 @@ const JournalListContent: React.FC = () => {
                             key={item.title}
                             actions={[
                                 <IconText icon={StarOutlined} text={item.datetime} key="list-vertical-star-o" />,
-                                item.tags.map((tag, index) => (
+                                item.tags && item.tags.map((tag, index) => (
                                     <Tag color="blue" key={index}>
                                         {tag}
                                     </Tag>

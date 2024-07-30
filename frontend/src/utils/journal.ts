@@ -2,9 +2,12 @@ import axios from 'axios';
 
 interface JournalEntry {
   id: number;
-  date: string;
-  content: string;
-  // 其他字段根据实际情况添加
+  datetime: string;
+  content?: string | "";
+  href?: string | "https://ant.design";
+  title?: string | "Undefined";
+  tags?: string[] | [];
+  description?: string | "";
 }
 
 interface GetUserJournalOptions {
@@ -88,3 +91,4 @@ async function addUserJournal(userId: string, entry: JournalEntry): Promise<void
 
 export default getUserJournal;
 export { updateUserJournal, deleteUserJournal, addUserJournal };
+export type { JournalEntry, GetUserJournalOptions };

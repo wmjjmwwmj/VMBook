@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Request, UploadFile, File, Form
+from fastapi import APIRouter, Depends, HTTPException, Request, UploadFile, File, Form, Query
 from typing import List
 from sqlmodel import Session
 from database import get_db
@@ -27,27 +27,27 @@ ALGORITHM = os.getenv("ALGORITHM")
 router = APIRouter()
 
 pwd_context = CryptContext(schemes=["sha256_crypt"], deprecated="auto")
-# OAuth2 scheme
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+# # OAuth2 scheme
+# oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 
-async def get_current_user(token: str = Depends(oauth2_scheme)):
-    credentials_exception = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Could not validate credentials",
-        headers={"WWW-Authenticate": "Bearer"},
-    )
-    try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        email: str = payload.get("email")
-        if email is None:
-            raise credentials_exception
-    except JWTError:
-        raise credentials_exception
-    user = db.query(UserModel).filter(UserModel.email == email).first()
-    if user is None:
-        raise credentials_exception
-    return user
+# async def get_current_user(token: str = Depends(oauth2_scheme)):
+#     credentials_exception = HTTPException(
+#         status_code=status.HTTP_401_UNAUTHORIZED,
+#         detail="Could not validate credentials",
+#         headers={"WWW-Authenticate": "Bearer"},
+#     )
+#     try:
+#         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+#         email: str = payload.get("email")
+#         if email is None:
+#             raise credentials_exception
+#     except JWTError:
+#         raise credentials_exception
+#     user = db.query(UserModel).filter(UserModel.email == email).first()
+#     if user is None:
+#         raise credentials_exception
+#     return user
 
 
 # 保存上传的文件到指定目录
@@ -162,16 +162,16 @@ def update_user(user_id: UUID, user_update: UserUpdate, db: Session = Depends(ge
 ------------------------------------------------------------------------------
 """
 # get all devices from user by id
-@router.get("/users/{user_id}/devices")
-def get_user_devices(user_id: UUID, db: Session = Depends(get_db), response_model=List[DeviceResponse]):
+@router.get("/users/{user_id}/devices", response_model=List[DeviceResponse])
+def get_user_devices(user_id: UUID, db: Session = Depends(get_db)):
     user = db.query(UserModel).filter(UserModel.user_id == user_id).first()
     if user is None:
         raise HTTPException(status_code=404, detail="User not found")
     return user.devices
 
 # get details from a specific device of a user by id
-@router.get("/users/{user_id}/devices/{device_id}")
-def get_user_device(user_id: UUID, device_id: UUID, db: Session = Depends(get_db), response_model=DeviceResponse):
+@router.get("/users/{user_id}/devices/{device_id}", response_model=DeviceResponse)
+def get_user_device(user_id: UUID, device_id: UUID, db: Session = Depends(get_db)):
     user = db.query(UserModel).filter(UserModel.user_id == user_id).first()
     if user is None:
         raise HTTPException(status_code=404, detail="User not found")
@@ -230,8 +230,8 @@ def delete_user_device(user_id: UUID, device_id: UUID, db: Session = Depends(get
 """
 
 # get all journals from user by id
-@router.get("/users/{user_id}/journals")
-def get_user_journals(user_id: UUID, db: Session = Depends(get_db), response_model=List[JournalResponse]):
+@router.get("/users/{user_id}/journals", response_model=List[JournalResponse])
+def get_user_journals(user_id: UUID, db: Session = Depends(get_db)):
     user = db.query(UserModel).filter(UserModel.user_id == user_id).first()
     if user is None:
         raise HTTPException(status_code=404, detail="User not found")
@@ -239,7 +239,7 @@ def get_user_journals(user_id: UUID, db: Session = Depends(get_db), response_mod
 
 # create a journal for a user by id
 @router.post("/users/{user_id}/journals", response_model=JournalResponse)
-def create_user_journal(user_id: UUID, journal: JournalCreate, db: Session = Depends(get_db), response_model=JournalResponse):
+def create_user_journal(user_id: UUID, journal: JournalCreate, db: Session = Depends(get_db)):
     if db.query(UserModel).filter(UserModel.user_id == user_id).first() is None:
         raise HTTPException(status_code=404, detail="User not found")
     
@@ -250,8 +250,8 @@ def create_user_journal(user_id: UUID, journal: JournalCreate, db: Session = Dep
     return journal
 
 # get details from a specific journal of a user by id
-@router.get("/users/{user_id}/journals/{journal_id}")
-def get_user_journal(user_id: UUID, journal_id: UUID, db: Session = Depends(get_db), response_model=JournalResponse):
+@router.get("/users/{user_id}/journals/{journal_id}", response_model=JournalResponse)
+def get_user_journal(user_id: UUID, journal_id: UUID, db: Session = Depends(get_db)):
     user = db.query(UserModel).filter(UserModel.user_id == user_id).first()
     if user is None:
         raise HTTPException(status_code=404, detail="User not found")
@@ -305,13 +305,43 @@ def delete_user_journal(user_id: UUID, journal_id: UUID, db: Session = Depends(g
 """
 
 # get all photos from user by id
-@router.get("/users/{user_id}/photos")
-def get_user_photos(user_id: UUID, db: Session = Depends(get_db), response_model=List[PhotoResponse]):
+# [ x ]: Add query parameters to filter photos 
+# [ ]: Test get photos with query parameters
+@router.get("/users/{user_id}/photos", response_model=List[PhotoResponse])
+def get_user_photos(user_id: UUID, db: Session = Depends(get_db), 
+                    limit: int = Query(10, description="Limit the number of photos returned", ge=1, le=100),
+                    offset: int = Query(0, description="Offset the number of photos returned", ge=0),
+                    starred: bool = Query(False, description="Filter photos by starred status"),
+                    fromDate: datetime = Query(None, description="Filter photos by date"),
+                    toDate: datetime = Query(None, description="Filter photos by date"),
+                    device: str = Query(None, description="Filter photos by device"),
+                    contains: str = Query(None, description="Filter photos by description")):
+    
     user = db.query(UserModel).filter(UserModel.user_id == user_id).first()
     if user is None:
         raise HTTPException(status_code=404, detail="User not found")
-    return user.photos
+    
+    photos_query = db.query(PhotoModel).filter(PhotoModel.user_id == user_id)
+    
+    if starred:
+        photos_query = photos_query.filter(PhotoModel.starred == starred)
 
+    if fromDate:
+        photos_query = photos_query.filter(PhotoModel.date >= fromDate)
+
+    if toDate:
+        photos_query = photos_query.filter(PhotoModel.date <= toDate)
+
+    if device:
+        photos_query = photos_query.filter(PhotoModel.device == device)
+
+    if contains:
+        photos_query = photos_query.filter(PhotoModel.description.contains(contains))
+
+    filtered_photos = photos_query.order_by(PhotoModel.time_modified.desc()).offset(offset).limit(limit).all()
+
+    return filtered_photos
+    
 # create a photo for a user by id
 @router.post("/users/{user_id}/photos", response_model=PhotoResponse)
 def create_user_photo(user_id: UUID, photo_create: str = Form(...), image: UploadFile = File(...), db: Session = Depends(get_db)):
@@ -345,8 +375,8 @@ def create_user_photo(user_id: UUID, photo_create: str = Form(...), image: Uploa
 
 
 # get details from a specific photo of a user by id
-@router.get("/users/{user_id}/photos/{photo_id}")
-def get_user_photo(user_id: UUID, photo_id: UUID, db: Session = Depends(get_db), response_model=PhotoResponse):
+@router.get("/users/{user_id}/photos/{photo_id}", response_model=PhotoResponse)
+def get_user_photo(user_id: UUID, photo_id: UUID, db: Session = Depends(get_db)):
     user = db.query(UserModel).filter(UserModel.user_id == user_id).first()
     if user is None:
         raise HTTPException(status_code=404, detail="User not found")
@@ -378,6 +408,7 @@ def update_user_photo(user_id: UUID, photo_id: UUID, photo: PhotoUpdate, db: Ses
 
 
 # delete a photo for a user by id
+# TODO: Handle multiple photo deletion
 @router.delete("/users/{user_id}/photos/{photo_id}")
 def delete_user_photo(user_id: UUID, photo_id: UUID, db: Session = Depends(get_db)):
     user = db.query(UserModel).filter(UserModel.user_id == user_id).first()

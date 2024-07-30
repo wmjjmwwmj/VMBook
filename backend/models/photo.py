@@ -24,12 +24,14 @@ class PhotoUpdate(PhotoBase):
     starred: Optional[bool] = None
     file_name: Optional[str] = None
     
+# TODO: Update PhotoResponse to fit frontend needs
 class PhotoResponse(PhotoBase):
     photo_id: UUID
     user_id: UUID
     device_id: UUID
     time_created: datetime
     time_modified: datetime
+    url: Optional[str] = None
     journal_id: Optional[UUID] = None
     description: Optional[str] = None
     file_name: Optional[str] = None
