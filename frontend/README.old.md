@@ -25,7 +25,7 @@ Welcome to the Digital Memobook frontend repository! This project provides a use
 
 - **User Journals:**
   - Display user journals.
-    - [ ] get_journals(, filter)
+    - [x] get_journals(, filter)
   - Edit journal entries.
     - [ ] update_journal()
   - Delete journal entries.

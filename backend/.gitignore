@@ -1,0 +1,5 @@
+**/.env
+**/uploads
+**/.vscode
+**/.pytest_cache
+**/static
