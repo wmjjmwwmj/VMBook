@@ -17,9 +17,7 @@ STATIC_PATH = os.getenv("STATIC_PATH")
 STATIC_SERVER = os.getenv("STATIC_SERVER")
 
 def describe_image(image_url):
-    # get absolute path of image
-    # print(Path(STATIC_PATH))
-    # print(image_url)
+    
     image_url = image_url.replace(STATIC_SERVER, '')
     url = str(Path(STATIC_PATH).parent / str(Path(image_url).relative_to('/')))
     messages = [
@@ -32,11 +30,16 @@ def describe_image(image_url):
         }
     ]
     
+        
     response = dashscope.MultiModalConversation.call(model='qwen-vl-plus',
                                                       messages=messages)
     # Extracting the description
-    description = response["output"]["choices"][0]["message"]["content"][0]["text"]
-    print(description)
+    if response["output"]["choices"][0]["message"]["content"]:
+        description = response["output"]["choices"][0]["message"]["content"][0]["text"]
+        return description
+    else:
+        return None
+
     return description
 
 

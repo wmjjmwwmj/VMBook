@@ -21,6 +21,7 @@ from dotenv import load_dotenv
 from jose import jwt
 from passlib.context import CryptContext
 from datetime import datetime, timedelta
+from uuid import uuid4
 
 load_dotenv()
 
@@ -61,13 +62,10 @@ def save_upload_file(upload_file: UploadFile, destination: str):
         with open(destination, "wb") as buffer:
             shutil.copyfileobj(upload_file.file, buffer)
     except Exception as e:
-        print("Error saving file:",e)
-        return False
+        raise e
     finally:
         upload_file.file.close()
-    if os.path.exists(destination) and os.path.getsize(destination) > 0:
         return True
-    return False
 
 """
 ------------------------------------------------------------------------------ 
@@ -160,6 +158,27 @@ def update_user(user_id: UUID, user_update: UserUpdate, db: Session = Depends(ge
     return user
 
 
+# get user activities
+@router.get("/users/{user_id}/activities", response_model=List[ActivityResponse])
+def get_user_activities(user_id: UUID, db: Session = Depends(get_db)):
+    user = db.query(UserModel).filter(UserModel.user_id == user_id).first()
+    if user is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    activity_counts = {}
+    models = [JournalModel, PhotoModel, EntryModel]
+    
+    for model in models:
+        results = db.query(model).filter(model.user_id == user_id).all()
+        for result in results:
+            date = result.time_created.strftime("%Y-%m-%d")
+            activity_counts[date] = activity_counts.get(date, 0) + 1
+            
+    response = []
+    for key, value in activity_counts.items():
+        response.append(ActivityResponse(date=key, count=value))
+    return response
+
 
 """
 ------------------------------------------------------------------------------ 
@@ -233,14 +252,77 @@ def delete_user_device(user_id: UUID, device_id: UUID, db: Session = Depends(get
                                 Journal endpoints                               
 ------------------------------------------------------------------------------
 """
-
-# get all journals from user by id
 @router.get("/users/{user_id}/journals", response_model=List[JournalResponse])
-def get_user_journals(user_id: UUID, db: Session = Depends(get_db)):
+def get_user_journals(user_id: UUID, db: Session = Depends(get_db), 
+                      limit: int = Query(10, description="Limit the number of journals returned", ge=1, le=100),
+                      offset: int = Query(0, description="Offset the number of journals returned", ge=0),
+                      is_public: bool = Query(None, description="Filter journals by public status"),
+                      fromDate: datetime = Query(None, description="Filter journals by date"),
+                      toDate: datetime = Query(None, description="Filter journals by date"),
+                      contains: str = Query(None, description="Filter journals by content"),
+                      tags: str = Query(None, description="Filter journals by tags"),
+                      sortby: str = Query("time_modified", description="Sort journals by time_created or time_modified"),
+                      order: str = Query("desc", description="Order journals in ascending or descending order")
+                      ):
+    """
+    Retrieve journals for a specific user based on the provided filters.
+
+    Parameters:
+    - user_id (UUID): The ID of the user.
+    - db (Session): The database session.
+    - limit (int): Limit the number of journals returned. Default is 10. Must be between 1 and 100.
+    - offset (int): Offset the number of journals returned. Default is 0.
+    - is_public (bool): Filter journals by public status. Default is None.
+    - fromDate (datetime): Filter journals by date. Default is None.
+    - toDate (datetime): Filter journals by date. Default is None.
+    - contains (str): Filter journals by content. Default is None.
+    - tags (str): Filter journals by tags. Default is None.
+    - sortby (str): Sort journals by time_created or time_modified. Default is time_modified.
+    - order (str): Order journals in ascending or descending order. Default is desc.
+
+    Returns:
+    - List[JournalResponse]: A list of journal objects that match the provided filters.
+    
+    Examples: 
+    GET /users/12345678-1234-5678-1234-567812345678/journals?limit=5&offset=0&is_public=true&fromDate=2021-01-01&toDate=2021-12-31&contains=vacation&tags=travel
+    """
+    
     user = db.query(UserModel).filter(UserModel.user_id == user_id).first()
     if user is None:
         raise HTTPException(status_code=404, detail="User not found")
-    return user.journals
+    
+    journals_query = db.query(JournalModel).filter(JournalModel.user_id == user_id)
+    
+    if is_public is not None:
+        journals_query = journals_query.filter(JournalModel.is_public == is_public)
+
+    if fromDate:
+        journals_query = journals_query.filter(JournalModel.time_modified >= fromDate)
+
+    if toDate:
+        journals_query = journals_query.filter(JournalModel.time_modified <= toDate)
+
+    if contains:
+        journals_query = journals_query.filter(JournalModel.text_content.contains(contains))
+
+    if tags:
+        journals_query = journals_query.filter(JournalModel.tags.contains(tags))
+        
+    filtered_journals = journals_query.order_by(
+        getattr(JournalModel, f"{sortby}").asc() if order == "asc" else getattr(JournalModel, f"{sortby}").desc()
+    ).offset(offset).limit(limit).all()
+        
+    return filtered_journals
+
+
+
+# get all journals from user by id
+# @router.get("/users/{user_id}/journals", response_model=List[JournalResponse])
+# def get_user_journals(user_id: UUID, db: Session = Depends(get_db)):
+#     user = db.query(UserModel).filter(UserModel.user_id == user_id).first()
+#     if user is None:
+#         raise HTTPException(status_code=404, detail="User not found")
+#     return user.journals
 
 # create a journal for a user by id
 @router.post("/users/{user_id}/journals", response_model=JournalResponse)
@@ -361,7 +443,9 @@ def get_user_photos(user_id: UUID, db: Session = Depends(get_db),
                     fromDate: datetime = Query(None, description="Filter photos by date"),
                     toDate: datetime = Query(None, description="Filter photos by date"),
                     device: str = Query(None, description="Filter photos by device"),
-                    contains: str = Query(None, description="Filter photos by description")):
+                    contains: str = Query(None, description="Filter photos by description"),
+                    sortby: str = Query("time_modified", description="Sort photos by time_created or time_modified"),
+                    order: str = Query("desc", description="Order photos in ascending or descending order")):
     """
     Retrieve photos for a specific user based on the provided filters.
 
@@ -375,12 +459,14 @@ def get_user_photos(user_id: UUID, db: Session = Depends(get_db),
     - toDate (datetime): Filter photos by date. Default is None.
     - device (str): Filter photos by device. Default is None.
     - contains (str): Filter photos by description. Default is None.
+    - sortby (str): Sort photos by time_created or time_modified. Default is time_modified.
+    - order (str): Order photos in ascending or descending order. Default is desc.
 
     Returns:
     - List[PhotoResponse]: A list of photo objects that match the provided filters.
     
     Examples: 
-    GET /users/12345678-1234-5678-1234-567812345678/photos?limit=5&offset=0&starred=true&fromDate=2021-01-01&toDate=2021-12-31&device=iphone&contains=dog
+    GET /users/12345678-1234-5678-1234-567812345678/photos?limit=5&offset=0&starred=true&fromDate=2021-01-01&toDate=2021-12-31&device=iphone&contains=dog&sortby=time_created&order=asc
     """
     
     user = db.query(UserModel).filter(UserModel.user_id == user_id).first()
@@ -406,7 +492,10 @@ def get_user_photos(user_id: UUID, db: Session = Depends(get_db),
     if contains:
         photos_query = photos_query.filter(PhotoModel.description.contains(contains))
 
-    filtered_photos = photos_query.order_by(PhotoModel.time_modified.desc()).offset(offset).limit(limit).all()
+
+    filtered_photos = photos_query.order_by(
+            getattr(PhotoModel, f"{sortby}").asc() if order == "asc" else getattr(PhotoModel, f"{sortby}").desc()
+        ).offset(offset).limit(limit).all()
 
     return filtered_photos
     
@@ -425,11 +514,16 @@ def create_user_photo(user_id: UUID, photo_create: str = Form(...), image: Uploa
         raise HTTPException(status_code=400, detail=f"Invalid data: {e}")
     
     savedir = os.path.join(os.path.dirname(__file__), f"../static/images/{user_id}/")
+    
     os.makedirs(os.path.dirname(savedir), exist_ok=True)
+    
+    unique_filename = f"{uuid4()}_{image.filename}"
+    savepath = os.path.join(savedir, unique_filename)
+    
     if image.file:
-        savepath = os.path.join(savedir, image.filename)
+
         if save_upload_file(image, savepath):
-            url = f"{STATIC_SERVER}/static/images/{user_id}/{image.filename}"
+            url = f"{STATIC_SERVER}/static/images/{user_id}/{unique_filename}"
         else:
             raise HTTPException(status_code=400, detail="Error saving file")
     else:
@@ -535,7 +629,7 @@ def delete_user_photos(user_id: UUID, photo_ids: List[UUID], db: Session = Depen
 
 # anaylze a photo
 @router.get("/users/{user_id}/photos/{photo_id}/analyze")
-def analyze_photo(user_id: UUID, photo_id: UUID, db: Session = Depends(get_db)):
+async def analyze_photo(user_id: UUID, photo_id: UUID, db: Session = Depends(get_db)):
     user = db.query(UserModel).filter(UserModel.user_id == user_id).first()
     if user is None:
         raise HTTPException(status_code=404, detail="User not found")
