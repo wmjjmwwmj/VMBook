@@ -4,12 +4,13 @@ import SearchBar, { SearchFilters } from '../../components/SearchBar/SearchBar';
 import { List, Space, Tag, Skeleton, Divider, FloatButton, message } from 'antd';
 import { StarOutlined } from '@ant-design/icons';
 import InfiniteScroll from 'react-infinite-scroll-component';
-import getUserJournal, {JournalEntry, GetUserJournalOptions} from '../../utils/journal';
+import getUserJournal, {JournalResponse, GetUserJournalOptions} from '../../utils/journals';
 
 const data = Array.from({ length: 23 }).map((_, i) => ({
+    id: 23123232131,
+    datetime:'2021-09-01',
     href: 'https://ant.design',
     title: `ant design part ${i}`,
-    datetime: '2021-09-01',
     tags: ['nice', 'developer'],
     description:
         'Ant Design, a design language for background applications, is refined by Ant UED Team.',
@@ -26,18 +27,19 @@ const IconText = ({ icon, text }: { icon: React.FC; text: string }) => (
 );
 
 
-const [filters, setFilters] = React.useState<SearchFilters>({
-    starred: false,
-    device: undefined,
-    fromDate: null,
-    toDate: null,
-    content: '',
-});
+// const [filters, setFilters] = React.useState<SearchFilters>({
+//     starred: false,
+//     device: undefined,
+//     fromDate: null,
+//     toDate: null,
+//     content: '',
+// });
 
 const JournalListContent: React.FC = () => {
 
     const [loading, setLoading] = React.useState(false);
-    const [journalData, setJournalData] = React.useState<JournalEntry[]>([]);
+    const [journalData, setJournalData] = React.useState<JournalResponse[]>([]);
+    
 
 
     const loadMoreData = async () => {
@@ -46,7 +48,7 @@ const JournalListContent: React.FC = () => {
           }
         setLoading(true);
         message.success('Load more data ...');
-        const data = await getUserJournal( 'userid' ,filters);
+        // const data = await getUserJournal( 'userid' ,filters);
         setJournalData([...journalData, ...data]);
         setLoading(false);
     };
@@ -103,13 +105,14 @@ const JournalListContent: React.FC = () => {
 
 
 const handleFilterChange = (filters: SearchFilters) => {
+    
     console.log('Filters changed:', filters);
-    setFilters(filters);
     // Perform actions based on updated filters
 };
 
 
 const JournalListView: React.FC = () => {
+    
     return (
         <MyLayout>
             <SearchBar onFilterChange={handleFilterChange} />

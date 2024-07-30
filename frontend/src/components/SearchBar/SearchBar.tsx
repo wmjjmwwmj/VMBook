@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Space, Input, DatePicker, Button, Radio, Select } from 'antd';
 
 const { RangePicker } = DatePicker;
@@ -54,6 +54,7 @@ const SearchBar: React.FC<SearchBarProps> = ({ onFilterChange }) => {
                 <Radio.Button value="starred">Starred</Radio.Button>
             </Radio.Group>
             <RangePicker onChange={handleDatePickerChange} />
+            {/* TODO: dynamically get user device list */}
             <Select placeholder='Device' onChange={handleDeviceChange} value={device}>
                 <Select.Option value="laptop">Laptop</Select.Option>
                 <Select.Option value="tablet">Tablet</Select.Option>

@@ -24,7 +24,7 @@ class PhotoUpdate(PhotoBase):
     starred: Optional[bool] = None
     file_name: Optional[str] = None
     
-# TODO: Update PhotoResponse to fit frontend needs
+# Update PhotoResponse to fit frontend needs
 class PhotoResponse(PhotoBase):
     photo_id: UUID
     user_id: UUID

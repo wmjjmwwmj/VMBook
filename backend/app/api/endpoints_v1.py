@@ -1,4 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Request, UploadFile, File, Form, Query
+from fastapi.responses import FileResponse
+from fastapi.security import OAuth2PasswordBearer
+
 from typing import List
 from sqlmodel import Session
 from database import get_db
@@ -13,16 +16,18 @@ from database import Entry as EntryModel
 
 import shutil, json, os, sys
 from uuid import UUID
+from pathlib import Path
 from dotenv import load_dotenv
 from jose import jwt
 from passlib.context import CryptContext
 from datetime import datetime, timedelta
-from fastapi.security import OAuth2PasswordBearer
 
 load_dotenv()
 
 SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = os.getenv("ALGORITHM")
+STATIC_SERVER = os.getenv("STATIC_SERVER")
+STATIC_PATH = os.getenv("STATIC_PATH")
 
 router = APIRouter()
 
@@ -298,7 +303,7 @@ def delete_user_journal(user_id: UUID, journal_id: UUID, db: Session = Depends(g
     return {"message": "Journal deleted successfully"}
 
 
-# TODO: Delete multiple journals
+# Delete multiple journals
 @router.delete("/users/{user_id}/journals")
 def delete_user_journals(user_id: UUID, journal_ids: List[UUID], db: Session = Depends(get_db)):
     """
@@ -348,7 +353,6 @@ def delete_user_journals(user_id: UUID, journal_ids: List[UUID], db: Session = D
 
 # get all photos from user by id
 # Added query parameters to filter photos 
-# TODO: Test get photos with query parameters
 @router.get("/users/{user_id}/photos", response_model=List[PhotoResponse])
 def get_user_photos(user_id: UUID, db: Session = Depends(get_db), 
                     limit: int = Query(10, description="Limit the number of photos returned", ge=1, le=100),
@@ -420,18 +424,18 @@ def create_user_photo(user_id: UUID, photo_create: str = Form(...), image: Uploa
     except ValueError as e:
         raise HTTPException(status_code=400, detail=f"Invalid data: {e}")
     
-    savedir = os.path.join(os.path.dirname(__file__), f"uploads/{user_id}/")
+    savedir = os.path.join(os.path.dirname(__file__), f"../static/images/{user_id}/")
     os.makedirs(os.path.dirname(savedir), exist_ok=True)
     if image.file:
         savepath = os.path.join(savedir, image.filename)
         if save_upload_file(image, savepath):
-            pass
+            url = f"{STATIC_SERVER}/static/images/{user_id}/{image.filename}"
         else:
             raise HTTPException(status_code=400, detail="Error saving file")
     else:
         raise HTTPException(status_code=400, detail="No file uploaded")
         
-    photo = PhotoModel(**photo_create.dict(), user_id=user_id, url=savepath)
+    photo = PhotoModel(**photo_create.dict(), user_id=user_id, url=url)
     db.add(photo)
     db.commit()
     db.refresh(photo)
@@ -546,4 +550,10 @@ def analyze_photo(user_id: UUID, photo_id: UUID, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(photo)
     return photo
+
+# static file serving
+@router.get("/static/images/{user_id}/{filename}")
+def get_image(user_id: UUID, filename: str):
+    image_path = str(Path(STATIC_PATH) / f"images/{user_id}/{filename}")
+    return FileResponse(image_path)
 

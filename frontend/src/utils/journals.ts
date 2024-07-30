@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-interface JournalEntry {
+interface JournalResponse {
   id: number;
   datetime: string;
   content?: string | "";
@@ -19,7 +19,7 @@ interface GetUserJournalOptions {
   limit?: number;
 }
 
-async function getUserJournal(userId: string, options?: GetUserJournalOptions): Promise<JournalEntry[]> {
+async function getUserJournal(userId: string, options?: GetUserJournalOptions): Promise<JournalResponse[]> {
   try {
     let url = `/users/${userId}/journals/`;
 
@@ -46,7 +46,7 @@ async function getUserJournal(userId: string, options?: GetUserJournalOptions): 
 
     const response = await axios.get(url);
     console.log('User journal:', response.data);
-    return response.data as JournalEntry[]; // 明确返回类型
+    return response.data as JournalResponse[]; // 明确返回类型
   } catch (error) {
     console.error('Error fetching user journal:', error);
     throw error;
@@ -54,7 +54,7 @@ async function getUserJournal(userId: string, options?: GetUserJournalOptions): 
 }
 
 
-async function updateUserJournal(userId: string, entry: JournalEntry): Promise<void> {
+async function updateUserJournal(userId: string, entry: JournalResponse): Promise<void> {
     try {
         const url = `/api/journal/${userId}/${entry.id}`;
         const response = await axios.put(url, entry);
@@ -78,7 +78,7 @@ async function deleteUserJournal(userId: string, entryId: number): Promise<void>
 }
 
 
-async function addUserJournal(userId: string, entry: JournalEntry): Promise<void> {
+async function addUserJournal(userId: string, entry: JournalResponse): Promise<void> {
     try {
         const url = `/api/journal/${userId}`;
         const response = await axios.post(url, entry);
@@ -91,4 +91,4 @@ async function addUserJournal(userId: string, entry: JournalEntry): Promise<void
 
 export default getUserJournal;
 export { updateUserJournal, deleteUserJournal, addUserJournal };
-export type { JournalEntry, GetUserJournalOptions };
+export type { JournalResponse, GetUserJournalOptions };
