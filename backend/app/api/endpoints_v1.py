@@ -298,6 +298,48 @@ def delete_user_journal(user_id: UUID, journal_id: UUID, db: Session = Depends(g
     return {"message": "Journal deleted successfully"}
 
 
+# TODO: Delete multiple journals
+@router.delete("/users/{user_id}/journals")
+def delete_user_journals(user_id: UUID, journal_ids: List[UUID], db: Session = Depends(get_db)):
+    """
+    Delete journals belonging to a user.
+
+    Args:
+        user_id (UUID): The ID of the user.
+        journal_ids (List[UUID]): A list of journal IDs to be deleted.
+        db (Session, optional): The database session. Defaults to Depends(get_db).
+
+    Returns:
+        dict: A dictionary containing the message indicating the number of journals deleted.
+    
+    Raises:
+        HTTPException: If the user or journals are not found.
+        
+    Example:
+    DELETE /users/12345678-1234-5678-1234-567812345678/journals
+    Content-Type: application/json
+
+    {
+    "journal_ids": ["abcdefab-cdef-abcd-efab-cdefabcdefab", "12345678-1234-5678-1234-567812345679"]
+    }
+    """
+    user = db.query(UserModel).filter(UserModel.user_id == user_id).first()
+    if user is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    journals = db.query(JournalModel).filter((JournalModel.journal_id.in_(journal_ids)) and (JournalModel.user_id == user_id)).all()
+    
+    assert len(journals) == len(journal_ids), f"{len(journal_ids) - len(journals)} journals not found"
+    
+    if not journals:
+        raise HTTPException(status_code=404, detail="Journals not found")
+    
+    for journal in journals:
+        db.delete(journal)
+    db.commit()
+    return {"message": f"{len(journals)} journals deleted successfully"}
+
+
 """
 ------------------------------------------------------------------------------
                                 Photo endpoints                 
@@ -305,8 +347,8 @@ def delete_user_journal(user_id: UUID, journal_id: UUID, db: Session = Depends(g
 """
 
 # get all photos from user by id
-# [ x ]: Add query parameters to filter photos 
-# [ ]: Test get photos with query parameters
+# Added query parameters to filter photos 
+# TODO: Test get photos with query parameters
 @router.get("/users/{user_id}/photos", response_model=List[PhotoResponse])
 def get_user_photos(user_id: UUID, db: Session = Depends(get_db), 
                     limit: int = Query(10, description="Limit the number of photos returned", ge=1, le=100),
@@ -316,6 +358,26 @@ def get_user_photos(user_id: UUID, db: Session = Depends(get_db),
                     toDate: datetime = Query(None, description="Filter photos by date"),
                     device: str = Query(None, description="Filter photos by device"),
                     contains: str = Query(None, description="Filter photos by description")):
+    """
+    Retrieve photos for a specific user based on the provided filters.
+
+    Parameters:
+    - user_id (UUID): The ID of the user.
+    - db (Session): The database session.
+    - limit (int): Limit the number of photos returned. Default is 10. Must be between 1 and 100.
+    - offset (int): Offset the number of photos returned. Default is 0.
+    - starred (bool): Filter photos by starred status. Default is False.
+    - fromDate (datetime): Filter photos by date. Default is None.
+    - toDate (datetime): Filter photos by date. Default is None.
+    - device (str): Filter photos by device. Default is None.
+    - contains (str): Filter photos by description. Default is None.
+
+    Returns:
+    - List[PhotoResponse]: A list of photo objects that match the provided filters.
+    
+    Examples: 
+    GET /users/12345678-1234-5678-1234-567812345678/photos?limit=5&offset=0&starred=true&fromDate=2021-01-01&toDate=2021-12-31&device=iphone&contains=dog
+    """
     
     user = db.query(UserModel).filter(UserModel.user_id == user_id).first()
     if user is None:
@@ -327,13 +389,15 @@ def get_user_photos(user_id: UUID, db: Session = Depends(get_db),
         photos_query = photos_query.filter(PhotoModel.starred == starred)
 
     if fromDate:
-        photos_query = photos_query.filter(PhotoModel.date >= fromDate)
+        photos_query = photos_query.filter(PhotoModel.time_modified >= fromDate)
 
     if toDate:
-        photos_query = photos_query.filter(PhotoModel.date <= toDate)
+        photos_query = photos_query.filter(PhotoModel.time_modified <= toDate)
 
     if device:
-        photos_query = photos_query.filter(PhotoModel.device == device)
+        # device to device id
+        device_id = db.query(DeviceModel).filter(DeviceModel.device_name == device).first().device_id
+        photos_query = photos_query.filter(PhotoModel.device_id == device_id)
 
     if contains:
         photos_query = photos_query.filter(PhotoModel.description.contains(contains))
@@ -408,7 +472,6 @@ def update_user_photo(user_id: UUID, photo_id: UUID, photo: PhotoUpdate, db: Ses
 
 
 # delete a photo for a user by id
-# TODO: Handle multiple photo deletion
 @router.delete("/users/{user_id}/photos/{photo_id}")
 def delete_user_photo(user_id: UUID, photo_id: UUID, db: Session = Depends(get_db)):
     user = db.query(UserModel).filter(UserModel.user_id == user_id).first()
@@ -423,6 +486,48 @@ def delete_user_photo(user_id: UUID, photo_id: UUID, db: Session = Depends(get_d
     db.delete(photo)
     db.commit()
     return {"message": "Photo deleted successfully"}
+
+
+@router.delete("/users/{user_id}/photos")
+def delete_user_photos(user_id: UUID, photo_ids: List[UUID], db: Session = Depends(get_db)):
+    """
+    Delete photos belonging to a user.
+
+    Args:
+        user_id (UUID): The ID of the user.
+        photo_ids (List[UUID]): A list of photo IDs to be deleted.
+        db (Session, optional): The database session. Defaults to Depends(get_db).
+
+    Returns:
+        dict: A dictionary containing the message indicating the number of photos deleted.
+    
+    Raises:
+        HTTPException: If the user or photos are not found.
+        
+    Example:
+    DELETE /users/12345678-1234-5678-1234-567812345678/photos
+    Content-Type: application/json
+
+    {
+    "photo_ids": ["abcdefab-cdef-abcd-efab-cdefabcdefab", "12345678-1234-5678-1234-567812345679"]
+    }
+    """
+    user = db.query(UserModel).filter(UserModel.user_id == user_id).first()
+    if user is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    photos = db.query(PhotoModel).filter((PhotoModel.photo_id.in_(photo_ids)) and (PhotoModel.user_id == user_id)).all()
+    
+    assert len(photos) == len(photo_ids), f"{len(photo_ids) - len(photos)} photos not found"
+    
+    if not photos:
+        raise HTTPException(status_code=404, detail="Photos not found")
+    
+    for photo in photos:
+        db.delete(photo)
+    db.commit()
+    return {"message": f"{len(photos)} photos deleted successfully"}
+
 
 # anaylze a photo
 @router.get("/users/{user_id}/photos/{photo_id}/analyze")
