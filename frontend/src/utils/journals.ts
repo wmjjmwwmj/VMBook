@@ -15,13 +15,12 @@ interface GetUserJournalOptions {
   device: string | undefined;
   fromDate: string | null;
   toDate: string | null;
-  content: string;
-  limit?: number;
+  contains: string;
 }
 
-async function getUserJournal(userId: string, options?: GetUserJournalOptions): Promise<JournalResponse[]> {
+async function getUserJournal(userId: string, options?: GetUserJournalOptions, offset?: number, limit?:number): Promise<JournalResponse[]> {
   try {
-    let url = `/users/${userId}/journals/`;
+    let url = `http://192.168.0.34:8000/users/${userId}/journals`;
 
     // 构建查询参数
     if (options) {
@@ -32,21 +31,27 @@ async function getUserJournal(userId: string, options?: GetUserJournalOptions): 
       if (options.device) {
         params.append('device', options.device);
       }
-      if (options.limit) {
-        params.append('limit', options.limit.toString());
-      }
       if (options.fromDate) {
         params.append('fromDate', options.fromDate);
       }
       if (options.toDate) {
         params.append('toDate', options.toDate);
       }
+      if (options.contains) {
+        params.append('contains', options.contains);
+      }
+      if (offset) {
+        params.append('offset', offset.toString());
+      }
+      if (limit) {
+        params.append('limit', limit.toString());
+      }
       url += `?${params.toString()}`;
+      console.log('url:', url);
     }
 
     const response = await axios.get(url);
-    console.log('User journal:', response.data);
-    return response.data as JournalResponse[]; // 明确返回类型
+    return response.data as JournalResponse[];
   } catch (error) {
     console.error('Error fetching user journal:', error);
     throw error;

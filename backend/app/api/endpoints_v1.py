@@ -257,6 +257,7 @@ def get_user_journals(user_id: UUID, db: Session = Depends(get_db),
                       limit: int = Query(10, description="Limit the number of journals returned", ge=1, le=100),
                       offset: int = Query(0, description="Offset the number of journals returned", ge=0),
                       is_public: bool = Query(None, description="Filter journals by public status"),
+                      starred: bool = Query(None, description="Filter journals by starred status"),
                       fromDate: datetime = Query(None, description="Filter journals by date"),
                       toDate: datetime = Query(None, description="Filter journals by date"),
                       contains: str = Query(None, description="Filter journals by content"),
@@ -272,6 +273,7 @@ def get_user_journals(user_id: UUID, db: Session = Depends(get_db),
     - db (Session): The database session.
     - limit (int): Limit the number of journals returned. Default is 10. Must be between 1 and 100.
     - offset (int): Offset the number of journals returned. Default is 0.
+    - starred (bool): Filter journals by starred status. Default is None.
     - is_public (bool): Filter journals by public status. Default is None.
     - fromDate (datetime): Filter journals by date. Default is None.
     - toDate (datetime): Filter journals by date. Default is None.
@@ -295,6 +297,10 @@ def get_user_journals(user_id: UUID, db: Session = Depends(get_db),
     
     if is_public is not None:
         journals_query = journals_query.filter(JournalModel.is_public == is_public)
+    
+    # TODO: recreate the db with starred attribute
+    # if starred:
+    #     journals_query = journals_query.filter(JournalModel.starred == True)
 
     if fromDate:
         journals_query = journals_query.filter(JournalModel.time_modified >= fromDate)
@@ -303,7 +309,7 @@ def get_user_journals(user_id: UUID, db: Session = Depends(get_db),
         journals_query = journals_query.filter(JournalModel.time_modified <= toDate)
 
     if contains:
-        journals_query = journals_query.filter(JournalModel.text_content.contains(contains))
+        journals_query = journals_query.filter(JournalModel.description.contains(contains))
 
     if tags:
         journals_query = journals_query.filter(JournalModel.tags.contains(tags))

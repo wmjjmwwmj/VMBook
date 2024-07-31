@@ -12,7 +12,7 @@ interface SearchFilters {
     device: string | undefined;
     fromDate: string | null;
     toDate: string | null;
-    content: string;
+    contains: string;
 }
 
 const SearchBar: React.FC<SearchBarProps> = ({ onFilterChange }) => {
@@ -20,31 +20,31 @@ const SearchBar: React.FC<SearchBarProps> = ({ onFilterChange }) => {
     const [device, setDevice] = useState<string | undefined>();
     const [fromDate, setFromDate] = useState<string | null>(null);
     const [toDate, setToDate] = useState<string | null>(null);
-    const [content, setContent] = useState<string>('');
+    const [contains, setContains] = useState<string>('');
 
     const handleStarredChange = (e: any) => { 
         const isChecked = e.target.value === 'starred';
         setStarred(isChecked);
-        onFilterChange?.({ starred: isChecked, device, fromDate, toDate, content });
+        onFilterChange?.({ starred: isChecked, device, fromDate, toDate, contains });
     };
 
     const handleDatePickerChange = (dates: any, dateStrings: [string, string]) => {
         setFromDate(dateStrings[0]);
         setToDate(dateStrings[1]);
-        onFilterChange?.({ starred, device, fromDate: dateStrings[0], toDate: dateStrings[1], content });
+        onFilterChange?.({ starred, device, fromDate: dateStrings[0], toDate: dateStrings[1], contains });
     };
 
     const handleDeviceChange = (value: string) => {
         setDevice(value);
-        onFilterChange?.({ starred, device: value, fromDate, toDate, content });
+        onFilterChange?.({ starred, device: value, fromDate, toDate, contains });
     };
 
-    const handleContentChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setContent(e.target.value);
+    const handleContainsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setContains(e.target.value);
     };
 
     const handleFilterButtonClick = () => {
-        onFilterChange?.({ starred, device, fromDate, toDate, content });
+        onFilterChange?.({ starred, device, fromDate, toDate, contains });
     };
 
     return (
@@ -60,7 +60,7 @@ const SearchBar: React.FC<SearchBarProps> = ({ onFilterChange }) => {
                 <Select.Option value="tablet">Tablet</Select.Option>
                 <Select.Option value="phone">Phone</Select.Option>
             </Select>
-            <Input placeholder="Search Content..." onChange={handleContentChange} value={content} />
+            <Input placeholder="Search Contains..." onChange={handleContainsChange} value={contains} />
             <Button type="primary" onClick={handleFilterButtonClick}>Filter</Button>
         </Space>
     );
