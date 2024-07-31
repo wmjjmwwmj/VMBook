@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Space, Input, DatePicker, Button, Radio, Select } from 'antd';
-import { SearchFilters } from '../../utils/getFilterPhotos';
+// import { SearchFilters } from '../../utils/getFilterPhotos';
 import dayjs from 'dayjs';
 const { RangePicker } = DatePicker;
 
@@ -8,6 +8,14 @@ interface SearchBarProps {
     onFilterChange?: (filters: SearchFilters) => void;
     onFilterSet?: () => void;
     initFilters?: SearchFilters;
+}
+
+interface SearchFilters {
+    starred?: boolean;
+    device?: string | null;
+    fromDate?: string | null;
+    toDate?: string | null ;
+    contains?: string | null;
 }
 
 const dateFormat = 'YYYY-MM-DD';
@@ -34,7 +42,6 @@ const SearchBar: React.FC<SearchBarProps> = ({initFilters, onFilterChange, onFil
             fromDate: dateStrings[0], 
             toDate: dateStrings[1], 
             contains: initFilters?.contains });
-        
     };
 
     const handleDeviceChange = (value: string) => {

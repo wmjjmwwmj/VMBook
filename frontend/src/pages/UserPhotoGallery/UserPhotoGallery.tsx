@@ -306,6 +306,7 @@ const handleFilterSet = () => {
 
 };
 
+//  const filters: SearchFilters = {};
 
     return (
         <MyLayout>

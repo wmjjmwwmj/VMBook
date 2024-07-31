@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import apiClient from './axiosInstance';
 import { message } from 'antd';
 import { BrowserRouter as Router, Route, useLocation } from 'react-router-dom';
+import { SearchFilters } from '../components/SearchBar/SearchBar';
 
 interface PhotoType {
     photo_id: string;
@@ -19,13 +20,7 @@ interface PhotoType {
     userId: string;
   }
 
-  interface SearchFilters {
-    starred?: boolean;
-    device?: string | null;
-    fromDate?: string | null;
-    toDate?: string | null ;
-    contains?: string | null;
-}
+
 
 
 interface QueryType { 
