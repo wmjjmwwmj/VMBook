@@ -119,6 +119,7 @@ const JournalListView: React.FC = () => {
 
     return (
         <MyLayout>
+            {/* TODO: Pass filter to path */}
             <SearchBar onFilterChange={handleFilterChange} />
             <JournalListContent
                 loading={loading}
