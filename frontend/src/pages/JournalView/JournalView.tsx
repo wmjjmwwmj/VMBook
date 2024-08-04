@@ -47,6 +47,8 @@ const JournalViewContent: React.FC = () => {
         
     const handleEditorChange = ({ text }: { text: string }) => {
         setMarkdown(text);
+        // Send the markdown to the server
+        
     };
 
     const toggleEditMode = () => {
@@ -74,7 +76,7 @@ const JournalViewContent: React.FC = () => {
             )}
             <div className="button-container">
         <Button onClick={toggleEditMode} style={{ marginBottom: '20px' }}>
-          {isEditing ? '切换到浏览模式' : '切换到编辑模式'}
+          {isEditing ? '保存' : '编辑'}
         </Button>
         <Button style={{ marginBottom: '20px', marginLeft: '10px' }}>
           分享
