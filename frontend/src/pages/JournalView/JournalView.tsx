@@ -1,15 +1,13 @@
-
-import React, { useState } from 'react'; // 加花括号是命名导入 export const useState = ...;
+import React, { useState, useEffect, useRef } from 'react';
+import { useParams } from 'react-router-dom'; // Import useParams
 import MyLayout from '../../components/Layout';
-
-import { CheckCard } from '@ant-design/pro-components';
-import { DownloadOutlined,DeleteOutlined,FileAddOutlined,AntDesignOutlined,SendOutlined } from '@ant-design/icons';
-import { ConfigProvider, Flex, Image, Card, List, Avatar, Radio, Space,  Tooltip ,Divider,Button,Typography } from 'antd';
-import SearchBar   from '../../components/SearchBar/SearchBar';
+import { Button } from 'antd';
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm';
 import MarkdownEditor from 'react-markdown-editor-lite';
 import 'react-markdown-editor-lite/lib/index.css';
+import handleJournalDetails from '../../utils/getJournal';
+import { BrowserRouter as Router, Route, useLocation } from 'react-router-dom';
 
 import './JournalView.css';
 
@@ -35,15 +33,16 @@ import './JournalView.css';
 // `;
 
 
-const JournalViewContent: React.FC = () => {
+interface JournalViewContentProps {
+  journalContent: string;
+}
+
+const JournalViewContent: React.FC<JournalViewContentProps> = ({ journalContent }) => {
     const [markdown, setMarkdown] = useState<string>(`
-# GitHub Flavored Markdown
-        
-- [ ] Task list item
-- [x] Completed task list item
+# Welcome to your journal!
     `); // There must be no type/blank at the beginning of lines
 
-    const [isEditing, setIsEditing] = useState(true);
+    const [isEditing, setIsEditing] = useState(false);
         
     const handleEditorChange = ({ text }: { text: string }) => {
         setMarkdown(text);
@@ -88,11 +87,33 @@ const JournalViewContent: React.FC = () => {
 
 
 const JournalView: React.FC = () => {
+    // Acquire the journal id from the URL
+    // Fetch the journal content from the server
+
+    const location = useLocation();
+
+    // 使用useLocation钩子获取当前URL
+    const params = new URLSearchParams(location.search);
+    // 读取fromDate和toDate参数
+    const journalId = params.get('journalId') || '';
+
+    const [journalContent, setJournalContent] = useState<string>('');
+    const isInitialMount = useRef(true);
+
+    useEffect(() => {
+        if(isInitialMount.current) {
+            isInitialMount.current = false;
+            return;
+        }
+        console.log('Fetching journal content for journal id:', journalId);
+        handleJournalDetails({ journalId }).then((data) => {
+            setJournalContent(data);
+        });
+    }, []);
+
     return (
         <MyLayout>
-
-            <JournalViewContent />
-
+            <JournalViewContent journalContent={journalContent} />
         </MyLayout>
     );
 };

@@ -1,22 +1,15 @@
 import React, { useState, useEffect, useRef } from 'react'; // 加花括号是命名导入 export const useState = ...;
 import MyLayout from '../../components/Layout';
-
 import { CheckCard } from '@ant-design/pro-components';
-import { DownloadOutlined,DeleteOutlined,FileAddOutlined,AntDesignOutlined,SendOutlined, EditOutlined } from '@ant-design/icons';
-import { ConfigProvider, Flex, Image, Card, List, Avatar, Radio, Space,  Tooltip ,Divider,Button , Skeleton, FloatButton, message} from 'antd';
+import { DownloadOutlined, DeleteOutlined, FileAddOutlined, SendOutlined, EditOutlined } from '@ant-design/icons';
+import { Image, List, Space,  Tooltip ,Divider,Button , Skeleton, FloatButton, message} from 'antd';
 import SearchBar   from '../../components/SearchBar/SearchBar';
-// import axios from 'axios';
-import apiClient from '../../utils/axiosInstance';
-import handleAllPhotos   from '../../utils/getAllPhotos';
 import InfiniteScroll from 'react-infinite-scroll-component';
-import { time } from 'console';
-import { url } from 'inspector';
 import { BrowserRouter as Router, Route, useLocation } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
 import handleFilterPhotos, {QueryType, SearchFilters, PhotoType} from '../../utils/getFilterPhotos';
 
 const user_id = window.user_id;
-
 
 interface LinkComponentProps {
   editEnable: boolean;
@@ -60,8 +53,6 @@ const UserPhotoGalleryContent: React.FC<LinkComponentProps> = ({ editEnable, tog
         return;
       }
       setLoading(true);
-
-      const exampleData = { userId: 'f2f70472-3cc8-490d-a61d-d8133ebc8205' };
 
       handleFilterPhotos({ query: query }).then((photos: PhotoType[] | undefined) => {
         console.log('Fetched photos:', photos);
