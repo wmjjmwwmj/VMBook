@@ -23,9 +23,6 @@ interface JournalUpdate {
 
 
 const handleJournalDetails = async ({ journalId }: {  journalId: string }): Promise< string > => {
-  console.log("To fetch journal of:", journalId);
-  let url =  `/users/${window.user_id}/journals/${journalId}`;
-  console.log("url:", url);
 
   try {
     const response = await apiClient.get<journalResponse>(url);
@@ -43,6 +40,7 @@ const handleJournalDetails = async ({ journalId }: {  journalId: string }): Prom
   }
 };
 
+// TODO
 const handleJournalUpdate = async ({ journalId }: {  journalId: string }): Promise< string > => {
   console.log("To fetch journal of:", journalId);
   let url =  `/users/${window.user_id}/journals`;

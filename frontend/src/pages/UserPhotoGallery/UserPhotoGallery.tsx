@@ -8,6 +8,7 @@ import InfiniteScroll from 'react-infinite-scroll-component';
 import { BrowserRouter as Router, Route, useLocation } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
 import handleFilterPhotos, {QueryType, SearchFilters, PhotoType} from '../../utils/getFilterPhotos';
+import handleGenerationJournal from '../../utils/generateJournal';
 
 const user_id = window.user_id;
 
@@ -21,6 +22,8 @@ interface LinkComponentProps {
 // ButtonComponent 的 props 类型
 interface ButtonComponentProps {
   editEnable: boolean;
+  selectedPhotos?: string[];
+  setSelectedPhotos?: (selectedPhotos: string[]) => void;
 }
 
 const UserPhotoGalleryContent: React.FC<LinkComponentProps> = ({ editEnable, toggleEditEnable, query, queryEditor }) => {
@@ -155,7 +158,7 @@ const UserPhotoGalleryContent: React.FC<LinkComponentProps> = ({ editEnable, tog
 };
 
 // TODO: Implement the GalleryButtons component
-const GalleryButtons: React.FC<ButtonComponentProps> = ({ editEnable}) => {
+const GalleryButtons: React.FC<ButtonComponentProps> = ({ editEnable, selectedPhotos, setSelectedPhotos}) => {
     const [loadings, setLoadings] = useState<boolean[]>([]);
 
     const enterLoading = (index: number) => {
@@ -197,6 +200,34 @@ const GalleryButtons: React.FC<ButtonComponentProps> = ({ editEnable}) => {
     const deletePhotos = () => { // delete photos
         
     };
+
+    const generatePhotos = () => { // generate photos
+      //
+      handleGenerationJournal({ selectedPhotos: selectedPhotos }).then((response) => {
+        
+      }
+
+      // Make API call to server here
+      fetch('/api/generate-photos', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(selectedPhotos),
+      })
+      .then((response) => response.json())
+      .then((data) => {
+        // Display message to user that generation is done, and provide url to jump.
+        message.success('Photos generated successfully!');
+        navigate('/generated-photos');
+      })
+      .catch((error) => {
+        // Handle error here
+        console.error(error);
+        message.error('Failed to generate photos.');
+      });
+    };
+
 
 
     return (
@@ -265,17 +296,17 @@ const UserPhotoGallery: React.FC = () => {
     setEditEnable(!editEnable);
   }
 
-console.log('query', query);
+console.log('query', query); // 在严格模式下，这段代码会执行两次
 
 const navigate = useNavigate();
 
-
 const handleFilterChange = (filters: SearchFilters) => {
-  
   setQuery({...query, filters: filters});
   console.log('changed query', query);
   // Perform actions based on updated filters
 };
+
+const [selectedPhotos, setSelectedPhotos] = useState<string[]>([]);
 
 const handleFilterSet = (filters: SearchFilters) => {
   console.log('Filters submit:', filters);
@@ -290,9 +321,11 @@ const handleFilterSet = (filters: SearchFilters) => {
     if (filters?.contains) params.set('contains', filters?.contains);
 
     navigate({ search: params.toString() });
-    
+
     window.location.reload();
     console.log("Reload")
+
+    
 
 };
 
@@ -302,7 +335,7 @@ const handleFilterSet = (filters: SearchFilters) => {
         <MyLayout>
             <Space direction="vertical" size="large">
             <SearchBar initFilters = {query.filters} onFilterChange={handleFilterChange} onFilterSet={handleFilterSet} />
-            <GalleryButtons editEnable={editEnable} />
+            <GalleryButtons editEnable={editEnable} selectedPhotos={selectedPhotos} setSelectedPhotos={setSelectedPhotos}/>
                 <UserPhotoGalleryContent editEnable={editEnable} toggleEditEnable={toggleEditEnable} query={query} queryEditor = {queryEditor} />
                 <FloatButton.BackTop style={{ right: 94, }}/>
             </Space>
