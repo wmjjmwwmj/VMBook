@@ -31,5 +31,4 @@ class JournalResponse(JournalBase):
     
     class Config:
         from_attributes = True
-    
 

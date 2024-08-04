@@ -11,12 +11,14 @@
             "driver": "MySQL",
             "name": "localhost",
             "database": "vmbookdb",
-            "username": "root"
+            "username": "root",
+            "askForPassword": true
         }
     ],
     "python.testing.pytestArgs": [
         "backend"
     ],
     "python.testing.unittestEnabled": false,
-    "python.testing.pytestEnabled": true
+    "python.testing.pytestEnabled": true,
+    "todo-tree.tree.scanMode": "workspace only"
 }

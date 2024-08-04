@@ -34,3 +34,8 @@ class UserResponse(UserBase):
     
     class Config:
         from_attributes = True
+        
+        
+class ActivityResponse(BaseModel):
+    date: str
+    count: int

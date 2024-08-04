@@ -2,34 +2,44 @@ from http import HTTPStatus
 import dashscope
 import time
 import os
+from pathlib import Path
 from dotenv import load_dotenv
 import base64, uuid, io, json
 from PIL import Image
 from passlib.context import CryptContext
+import requests
 
 load_dotenv()
 
 
 dashscope.api_key = os.environ.get('QWEN_API_KEY')
-
+STATIC_PATH = os.getenv("STATIC_PATH") 
+STATIC_SERVER = os.getenv("STATIC_SERVER")
 
 def describe_image(image_url):
+    
+    image_url = image_url.replace(STATIC_SERVER, '')
+    url = str(Path(STATIC_PATH).parent / str(Path(image_url).relative_to('/')))
     messages = [
         {
             "role": "user",
             "content": [
-                {"image": image_url},
+                {"image": url},
                 {"text": "Please describe what you see in this image."}
             ]
         }
     ]
     
+        
     response = dashscope.MultiModalConversation.call(model='qwen-vl-plus',
                                                       messages=messages)
-
     # Extracting the description
-    description = response["output"]["choices"][0]["message"]["content"][0]["text"]
-    print(description)
+    if response["output"]["choices"][0]["message"]["content"]:
+        description = response["output"]["choices"][0]["message"]["content"][0]["text"]
+        return description
+    else:
+        return None
+
     return description
 
 
@@ -61,13 +71,4 @@ def hash_pwd(password: str) -> str:
 #     except (ValueError, OSError) as e:
 #         print(f"Error processing image: {e}")
 #         return None
-    
-    
-    filename = str(uuid.uuid4())
-    url = f'../../img_db/{filename}.png'    
-    # if save is successful
-    if img.save(url, 'PNG'):
-        return url
-    else:
-        return None
     

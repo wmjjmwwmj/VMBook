@@ -15,10 +15,7 @@ import { BrowserRouter as Router, Route, useLocation } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
 import handleFilterPhotos, {QueryType, SearchFilters, PhotoType} from '../../utils/getFilterPhotos';
 
-
-let test = "0"
-
-const user_id = "5136d795-1d5f-436c-853b-a8c898ecd426"
+const user_id = window.user_id;
 
 
 interface LinkComponentProps {
@@ -126,7 +123,7 @@ const UserPhotoGalleryContent: React.FC<LinkComponentProps> = ({ editEnable, tog
                             style={{ width: '190px', }}
                             onChange={(checked) => {
                               console.log('checked', checked);
-                              console.log(test);
+                              
                               
                               if (checked) {
                                 // add to selected list
@@ -249,7 +246,7 @@ const UserPhotoGallery: React.FC = () => {
   const contains = queryParams.get('contains');
 
   // 使用这些参数进行操作，例如调用API
-  console.log(fromDate, toDate);
+  // console.log(fromDate, toDate);
 
   const [query, setQuery] = useState<QueryType>({
     limit: 10,
@@ -275,7 +272,8 @@ const UserPhotoGallery: React.FC = () => {
 
   const toggleEditEnable = () => {
     setEditEnable(!editEnable);
-}
+  }
+
 console.log('query', query);
 
 const navigate = useNavigate();
@@ -288,21 +286,22 @@ const handleFilterChange = (filters: SearchFilters) => {
   // Perform actions based on updated filters
 };
 
-const handleFilterSet = () => {
-  console.log('Filters submit:', query.filters);
+const handleFilterSet = (filters: SearchFilters) => {
+  console.log('Filters submit:', filters);
   
   // Perform actions based on updated filters
   const params = new URLSearchParams();
-  if (query.filters?.starred) params.set('starred', 'true');
+  if (filters?.starred) params.set('starred', 'true');
   else params.delete('starred');
-    if (query.filters?.device) params.set('device', query.filters?.device);
-    if (query.filters?.fromDate) params.set('fromDate', query.filters?.fromDate);
-    if (query.filters?.toDate) params.set('toDate', query.filters?.toDate);
-    if (query.filters?.contains) params.set('contains', query.filters?.contains);
+    if (filters?.device) params.set('device', filters?.device);
+    if (filters?.fromDate) params.set('fromDate', filters?.fromDate);
+    if (filters?.toDate) params.set('toDate', filters?.toDate);
+    if (filters?.contains) params.set('contains', filters?.contains);
 
     navigate({ search: params.toString() });
     
     window.location.reload();
+    console.log("Reload")
 
 };
 

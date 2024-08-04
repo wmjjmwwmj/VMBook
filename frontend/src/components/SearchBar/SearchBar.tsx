@@ -6,7 +6,7 @@ const { RangePicker } = DatePicker;
 
 interface SearchBarProps {
     onFilterChange?: (filters: SearchFilters) => void;
-    onFilterSet?: () => void;
+    onFilterSet?: (filters: SearchFilters) => void;
     initFilters?: SearchFilters;
 }
 
@@ -20,12 +20,14 @@ interface SearchFilters {
 
 const dateFormat = 'YYYY-MM-DD';
 
+
+// TODO Add the setState function for initFilters, or use context, so that the SearchBar params can be controlled by the parent component, won't always exec twice by any trigger. 
 const SearchBar: React.FC<SearchBarProps> = ({initFilters, onFilterChange, onFilterSet}) => {
     console.log("searchbar",initFilters);
-
+    const [contains, setContains] = useState<string>(initFilters?.contains || '');
 
     const handleStarredChange = (e: any) => { 
-        const isChecked = e.target.value === 'starred';
+        const isChecked = e.target.value === 'starred' ? true : false;
         
         onFilterChange?.({ 
             starred: isChecked, 
@@ -55,21 +57,34 @@ const SearchBar: React.FC<SearchBarProps> = ({initFilters, onFilterChange, onFil
     };
 
     const handleContainsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        onFilterChange?.({ 
+        setContains(e.target.value);
+    };
+
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === 'Enter') {
+            handleFilterButtonClick();
+        }
+    };
+
+    const handleFilterButtonClick = () => {
+        const updatedFilters = { 
             starred: initFilters?.starred, 
             device: initFilters?.device, 
             fromDate: initFilters?.fromDate, 
             toDate: initFilters?.toDate, 
-            contains: e.target.value });
-    };
-
-    const handleFilterButtonClick = () => {
-        onFilterSet?.();
-    };
+            contains: contains 
+          };
+          
+          onFilterChange?.(updatedFilters);
+          
+          if (onFilterSet) {
+            onFilterSet(updatedFilters);
+          }
+    }; 
     const fromDateInit = initFilters?.fromDate ? initFilters?.fromDate : "2024-01-01";
     const toDateInit = initFilters?.toDate ? initFilters?.toDate : "2024-12-31";
-    console.log("fromDateInit",fromDateInit);
-    console.log("toDateInit",toDateInit);
+    // console.log("fromDateInit",fromDateInit);
+    // console.log("toDateInit",toDateInit);
 
     return (
         <Space>
@@ -85,9 +100,9 @@ const SearchBar: React.FC<SearchBarProps> = ({initFilters, onFilterChange, onFil
                 <Select.Option value="laptop">Laptop</Select.Option>
                 <Select.Option value="tablet">Tablet</Select.Option>
                 <Select.Option value="phone">Phone</Select.Option>
-                <Select.Option value="all">Phone</Select.Option>
+                <Select.Option value="all">All</Select.Option>
             </Select>
-            <Input placeholder="Search Content..." onChange={handleContainsChange} value={initFilters?.contains || ''} />
+            <Input placeholder="Search Content..." onChange={handleContainsChange} value={contains || ''} onKeyDown={handleKeyDown}/>
             <Button type="primary" onClick={handleFilterButtonClick}>Filter</Button>
         </Space>
     );
