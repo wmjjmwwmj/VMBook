@@ -15,15 +15,15 @@ const MyLayout: React.FC<MyLayoutProps> = ({ children }) => {
   } = theme.useToken();
 
   // TODO: Manage breadcrumb items dynamically with React Context
-  const breadCrumbItems = [
-    {
-      title: 'Home',
-      href: '/',
-    },
-    {
-      title: 'Profile',
-    },
-  ]
+  // const breadCrumbItems = [
+  //   {
+  //     title: 'Home',
+  //     href: '/',
+  //   },
+  //   {
+  //     title: 'Profile',
+  //   },
+  // ]
 
   return (
     <Layout>
@@ -33,7 +33,6 @@ const MyLayout: React.FC<MyLayoutProps> = ({ children }) => {
         </a>
       </Header>
       <Content style={{ padding: '0 24px' }}>
-        <Breadcrumb style={{ margin: '16px 0' }} items={breadCrumbItems} />
         <div
           style={{
             background: colorBgContainer,

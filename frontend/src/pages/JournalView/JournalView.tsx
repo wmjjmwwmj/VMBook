@@ -1,15 +1,13 @@
-
-import React, { useState } from 'react'; // 加花括号是命名导入 export const useState = ...;
+import React, { useState, useEffect, useRef } from 'react';
+import { useParams } from 'react-router-dom'; // Import useParams
 import MyLayout from '../../components/Layout';
-
-import { CheckCard } from '@ant-design/pro-components';
-import { DownloadOutlined,DeleteOutlined,FileAddOutlined,AntDesignOutlined,SendOutlined } from '@ant-design/icons';
-import { ConfigProvider, Flex, Image, Card, List, Avatar, Radio, Space,  Tooltip ,Divider,Button,Typography } from 'antd';
-import SearchBar   from '../../components/SearchBar/SearchBar';
+import { Button, message } from 'antd';
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm';
 import MarkdownEditor from 'react-markdown-editor-lite';
 import 'react-markdown-editor-lite/lib/index.css';
+import handleJournalDetails, {handleJournalUpdate} from '../../utils/getJournal';
+import { BrowserRouter as Router, Route, useLocation } from 'react-router-dom';
 
 import './JournalView.css';
 
@@ -35,24 +33,26 @@ import './JournalView.css';
 // `;
 
 
-const JournalViewContent: React.FC = () => {
-    const [markdown, setMarkdown] = useState<string>(`
-# GitHub Flavored Markdown
-        
-- [ ] Task list item
-- [x] Completed task list item
-    `); // There must be no type/blank at the beginning of lines
+interface JournalViewContentProps {
+  journalContent: string | undefined;
+  handleJournalChange?: (journalContent: string | undefined) => void;
+}
+
+const JournalViewContent: React.FC<JournalViewContentProps> = ({ journalContent, handleJournalChange }) => {
+    const [markdown, setMarkdown] = useState<string| undefined>(journalContent); // There must be no type/blank at the beginning of lines
 
     const [isEditing, setIsEditing] = useState(true);
         
     const handleEditorChange = ({ text }: { text: string }) => {
         setMarkdown(text);
         // Send the markdown to the server
-        
     };
 
     const toggleEditMode = () => {
         setIsEditing(!isEditing);
+        if (isEditing) {
+            handleJournalChange && handleJournalChange(markdown);
+        }
     };
 
     return (
@@ -76,23 +76,58 @@ const JournalViewContent: React.FC = () => {
             )}
             <div className="button-container">
         <Button onClick={toggleEditMode} style={{ marginBottom: '20px' }}>
-          {isEditing ? '保存' : '编辑'}
+            {isEditing ? 'Save' : 'Edit'}
         </Button>
         <Button style={{ marginBottom: '20px', marginLeft: '10px' }}>
-          分享
+            分享
         </Button>
-      </div>
+        </div>
         </div>
     );
 }
 
 
 const JournalView: React.FC = () => {
+    // Acquire the journal id from the URL
+    // Fetch the journal content from the server
+
+    const location = useLocation();
+
+    // 使用useLocation钩子获取当前URL
+    const params = new URLSearchParams(location.search);
+    // 读取fromDate和toDate参数
+    const journalId = params.get('journalId') || '';
+
+    const [journalContent, setJournalContent] = useState<string | undefined>('');
+    const isInitialMount = useRef(true);
+
+    useEffect(() => {
+        if(isInitialMount.current) {
+            isInitialMount.current = false;
+            return;
+        }
+        console.log('Fetching journal content for journal id:', journalId);
+        handleJournalDetails({ journalId }).then((data) => {
+
+            setJournalContent(data);
+        });
+    }, []);
+
+    const handleJournalChange = (updateContent: string | undefined) => {
+        console.log('Updating journal content for journal id:', journalId);
+        setJournalContent(updateContent);
+        handleJournalUpdate({ journalId, journalContent: updateContent }).then((isSuccess) => {
+            if (isSuccess) {
+                message.success('Journal updated successfully');
+            } else {
+                message.error('Journal update failed');
+        }
+    });
+    }
+
     return (
         <MyLayout>
-
-            <JournalViewContent />
-
+            <JournalViewContent journalContent={journalContent} handleJournalChange={handleJournalChange}/>
         </MyLayout>
     );
 };

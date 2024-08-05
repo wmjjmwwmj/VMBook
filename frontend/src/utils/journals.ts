@@ -4,10 +4,10 @@ interface JournalResponse {
   id: number;
   datetime: string;
   content?: string | "";
-  href?: string | "https://ant.design";
   title?: string | "Undefined";
   tags?: string[] | [];
   description?: string | "";
+  journal_id?: string;
 }
 
 interface GetUserJournalOptions {
