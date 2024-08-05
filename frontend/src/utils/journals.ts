@@ -11,11 +11,11 @@ interface JournalResponse {
 }
 
 interface GetUserJournalOptions {
-  starred: boolean;
-  device: string | undefined;
-  fromDate: string | null;
-  toDate: string | null;
-  contains: string;
+  starred?: boolean;
+  device?: string | null;
+  fromDate?: string | null;
+  toDate?: string | null;
+  contains?: string | null;
 }
 
 async function getUserJournal(userId: string, options?: GetUserJournalOptions, offset?: number, limit?:number): Promise<JournalResponse[]> {

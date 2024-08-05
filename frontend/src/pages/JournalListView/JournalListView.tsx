@@ -1,4 +1,5 @@
 import React, { useEffect, useCallback, useState, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import MyLayout from '../../components/Layout';
 import SearchBar, { SearchFilters } from '../../components/SearchBar/SearchBar';
 import { List, Space, Tag, Skeleton, Divider, FloatButton, message } from 'antd';
@@ -73,17 +74,19 @@ const JournalListContent: React.FC<JournalListContentProps> = React.memo(
 const JournalListView: React.FC = () => {
     const [filter, setFilter] = useState<SearchFilters>({
         starred: false,
-        device: undefined,
+        device: null,
         fromDate: null,
         toDate: null,
-        contains: '',
+        contains: null,
     });
     const [loading, setLoading] = useState<boolean>(false);
     const [journalData, setJournalData] = useState<JournalResponse[]>([]);
     const [hasMore, setHasMore] = useState<boolean>(true);
     const isInitialMount = useRef(true);
-    const userId = '5136d795-1d5f-436c-853b-a8c898ecd426';
+    const userId = window.user_id;
     const limit = 10;
+
+    const navigate = useNavigate();
 
     const fetchJournals = useCallback(async (isInitialFetch: boolean = false) => {
         if (isInitialMount.current) {
@@ -111,16 +114,27 @@ const JournalListView: React.FC = () => {
 
     const handleFilterChange = (newFilter: SearchFilters) => {
         setFilter(newFilter);
+        // Perform actions based on updated filters
+        const params = new URLSearchParams();
+        if (newFilter?.starred) params.set('starred', 'true');
+            else params.delete('starred');
+        if (newFilter?.device) params.set('device', newFilter?.device);
+        if (newFilter?.fromDate) params.set('fromDate', newFilter?.fromDate);
+        if (newFilter?.toDate) params.set('toDate', newFilter?.toDate);
+        if (newFilter?.contains) params.set('contains', newFilter?.contains);
+
+        navigate({ search: params.toString() });
     };
 
     const handleLoadMore = () => {
         fetchJournals();
     };
 
+    console.log('journalData:', filter);
+
     return (
         <MyLayout>
-            {/* TODO: Pass filter to path */}
-            <SearchBar onFilterChange={handleFilterChange} />
+            <SearchBar onFilterChange={handleFilterChange} initFilters={filter}/>
             <JournalListContent
                 loading={loading}
                 items={journalData}
