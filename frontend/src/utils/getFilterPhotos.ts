@@ -1,7 +1,4 @@
-import { useState, useEffect } from 'react';
 import apiClient from './axiosInstance';
-import { message } from 'antd';
-import { BrowserRouter as Router, Route, useLocation } from 'react-router-dom';
 import { SearchFilters } from '../components/SearchBar/SearchBar';
 
 interface PhotoType {
@@ -15,13 +12,6 @@ interface PhotoType {
     description?: string;
     file_name?: string;
   }
-
-  interface Data {
-    userId: string;
-  }
-
-
-
 
 interface QueryType { 
     user_id?: string| null;
@@ -47,10 +37,10 @@ const handleFilterPhotos = async ({ query }: {  query: any }): Promise<PhotoType
 
   let formalQuery: formalQueryType = {
     user_id: query.user_id,
-    limit: query.limit,
+    limit: query.limit, // Can be obtained by the length of data
     offset: query.offset,
     starred: query.filters.starred,
-    device: 'testdevice_ebmkrxhjgt',
+    device: window.device_id,
     fromDate: query.filters.fromDate,
     toDate: query.filters.toDate,
     contains: query.filters.contains,

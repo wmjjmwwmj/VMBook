@@ -1,5 +1,6 @@
 import React, { useEffect, useCallback, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { BrowserRouter as Router, Route, useLocation } from 'react-router-dom';
 import MyLayout from '../../components/Layout';
 import SearchBar, { SearchFilters } from '../../components/SearchBar/SearchBar';
 import { List, Space, Tag, Skeleton, Divider, FloatButton, message } from 'antd';
@@ -57,7 +58,7 @@ const JournalListContent: React.FC<JournalListContentProps> = React.memo(
                             }
                         >
                             <List.Item.Meta
-                                title={<a href={item.href}>{item.title}</a>}
+                                title={<a href={`http://${window.ip_and_port}/journalview?journalId=${item.journal_id}`}>{item.title}</a>}
                                 description={item.description}
                             />
                             {item.content}
@@ -72,12 +73,25 @@ const JournalListContent: React.FC<JournalListContentProps> = React.memo(
 
 // FIXME: this is working but got some error: Unchecked runtime.lastError: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
 const JournalListView: React.FC = () => {
+
+    const location = useLocation();
+
+    // 使用useLocation钩子获取当前URL
+    const queryParams = new URLSearchParams(location.search);
+    // 读取fromDate和toDate参数
+    const fromDate = queryParams.get('fromDate');
+    const toDate = queryParams.get('toDate');
+    const starred = queryParams.get('starred');
+    const device = queryParams.get('device');
+    const contains = queryParams.get('contains');
+  
+
     const [filter, setFilter] = useState<SearchFilters>({
-        starred: false,
-        device: null,
-        fromDate: null,
-        toDate: null,
-        contains: null,
+        starred: starred === 'true',
+        device: device,
+        fromDate: fromDate,
+        toDate: toDate,
+        contains: contains,
     });
     const [loading, setLoading] = useState<boolean>(false);
     const [journalData, setJournalData] = useState<JournalResponse[]>([]);
@@ -99,6 +113,7 @@ const JournalListView: React.FC = () => {
             const offset = isInitialFetch ? 0 : journalData.length;
             const data = await getUserJournal(userId, filter, offset, limit);
             setJournalData(prevData => isInitialFetch ? data : [...prevData, ...data]);
+            console.log('journalData:', journalData);
             setHasMore(data.length === limit);
         } catch (error) {
             console.error('Error fetching user journal:', error);
@@ -110,6 +125,7 @@ const JournalListView: React.FC = () => {
 
     useEffect(() => {
         fetchJournals(true);
+        
     }, [filter]);
 
     const handleFilterChange = (newFilter: SearchFilters) => {
