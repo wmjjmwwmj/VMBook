@@ -2,11 +2,11 @@ from fastapi import APIRouter, Depends, HTTPException, Request, UploadFile, File
 from fastapi.responses import FileResponse
 from fastapi.security import OAuth2PasswordBearer
 
-from typing import List
+from typing import List, Optional, Dict, Any
 from sqlmodel import Session
 from database import get_db
 
-from .functions import hash_pwd, describe_image
+from .functions import hash_pwd, describe_image, generate_journal_func
 from models import *
 from database import User as UserModel
 from database import Device as DeviceModel
@@ -392,7 +392,7 @@ def delete_user_journal(user_id: UUID, journal_id: UUID, db: Session = Depends(g
 
 
 # Delete multiple journals
-@router.delete("/users/{user_id}/journals")
+@router.post("/users/{user_id}/journals")
 def delete_user_journals(user_id: UUID, journal_ids: List[UUID], db: Session = Depends(get_db)):
     """
     Delete journals belonging to a user.
@@ -409,7 +409,7 @@ def delete_user_journals(user_id: UUID, journal_ids: List[UUID], db: Session = D
         HTTPException: If the user or journals are not found.
         
     Example:
-    DELETE /users/12345678-1234-5678-1234-567812345678/journals
+    POST /users/12345678-1234-5678-1234-567812345678/journals
     Content-Type: application/json
 
     {
@@ -431,6 +431,73 @@ def delete_user_journals(user_id: UUID, journal_ids: List[UUID], db: Session = D
         db.delete(journal)
     db.commit()
     return {"message": f"{len(journals)} journals deleted successfully"}
+
+
+# generate journal from selected entries
+@router.post("/users/{user_id}/journals/generate", response_model=JournalResponse)
+def generate_journal(user_id: UUID, body: Dict[str, Any], db: Session = Depends(get_db)):
+    """
+    Generate a journal for a user based on selected photos.
+
+    Args:
+        user_id (UUID): The ID of the user for whom the journal is being generated.
+        photo_ids (List[UUID]): The IDs of the selected photos.
+        db (Session, optional): The database session. Defaults to Depends(get_db).
+
+    Returns:
+        JournalModel: The generated journal.
+
+    Raises:
+        HTTPException: If the user is not found or no photos are selected.
+        
+    Example:
+    POST /users/12345678-1234-5678-1234-567812345678/journals/generate
+    Content-Type: application/json
+    {
+    "photo_ids": ["abcdefab-cdef-abcd-efab-cdefabcdefab", "12345678-1234-5678-1234-567812345679"]
+    "journal_ids": "abcdefab-cdef-abcd-efab-cdefabcdefab"
+    }
+    """
+    user = db.query(UserModel).filter(UserModel.user_id == user_id).first()
+    if user is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    try:
+        photo_ids = body.get("photo_ids")
+    except KeyError:
+        raise HTTPException(status_code=400, detail="No photos selected")
+    
+    photos = db.query(PhotoModel).filter(PhotoModel.photo_id.in_(photo_ids)).order_by(PhotoModel.time_created.asc()).all()
+
+    entries = []
+    for photo in photos:
+        if not photo.description:
+            photo.description = describe_image(photo.url)
+        entry = dict(time_created=photo.time_created, type="image", content=photo.description, url=photo.url)
+        entries.append(entry)
+        
+    title, journal = generate_journal_func(entries)
+
+    
+    # save the generated journal in the database
+    new_journal = JournalModel(description=journal, user_id=user_id, title="Generated Journal")
+    db.add(new_journal)
+    db.commit()
+    db.refresh(new_journal)
+    
+    return new_journal
+        
+    
+# fake endpoint that receives a list of strings
+@router.post("/fake-endpoint")
+def fake_endpoint(strings: List[str]):
+    # do something with the list of strings
+    for string in string:
+        # process each string
+        print(string)
+    
+    # return a response
+    return {"message": "Strings processed successfully"}
 
 
 """

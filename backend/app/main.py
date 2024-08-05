@@ -36,6 +36,19 @@ async def root():
     # Use db to query your database
     return {"message": "Welcome to VMBook!"}
 
+import logging
+from requests import Request
+
+@app.middleware("http") 
+async def log_requests(request: Request, call_next): 
+    logger = logging.getLogger(__name__)
+    logger.info(f"Request: {request.method} {request.url}") 
+    logger.info(f"Headers: {request.headers}") 
+    body = await request.body() 
+    logger.info(f"Body: {body}") 
+    response = await call_next(request) 
+    logger.info(f"Response status: {response.status_code}") 
+    return response
 
 if __name__ == "__main__":
 
