@@ -559,8 +559,11 @@ def get_user_photos(user_id: UUID, db: Session = Depends(get_db),
 
     if device:
         # device to device id
-        device_id = db.query(DeviceModel).filter(DeviceModel.device_name == device).first().device_id
-        photos_query = photos_query.filter(PhotoModel.device_id == device_id)
+        device = db.query(DeviceModel).filter(DeviceModel.device_name == device).first()
+        if device:
+            photos_query = photos_query.filter(PhotoModel.device_id == device.device_id)
+        else:
+            raise HTTPException(status_code=404, detail="Device not found")
 
     if contains:
         photos_query = photos_query.filter(PhotoModel.description.contains(contains))

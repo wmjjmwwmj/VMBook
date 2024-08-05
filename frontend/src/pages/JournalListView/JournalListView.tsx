@@ -5,7 +5,7 @@ import SearchBar, { SearchFilters } from '../../components/SearchBar/SearchBar';
 import { List, Space, Tag, Skeleton, Divider, FloatButton, message } from 'antd';
 import { StarOutlined } from '@ant-design/icons';
 import InfiniteScroll from 'react-infinite-scroll-component';
-import getUserJournal, { JournalResponse, GetUserJournalOptions } from '../../utils/journals';
+import getUserJournal, { JournalResponse} from '../../utils/journals';
 
 const IconText = ({ icon, text }: { icon: React.FC; text: string }) => (
     <Space>

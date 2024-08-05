@@ -16,9 +16,6 @@ STATIC_PATH = os.getenv("STATIC_PATH")
 
 app = FastAPI()
 
-# Your FastAPI app setup code here
-app.include_router(router)
-
 app.mount("/static", StaticFiles(directory=Path(STATIC_PATH)), name="static")
 
 app.add_middleware(
@@ -28,6 +25,10 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Your FastAPI app setup code here
+app.include_router(router)
+
 
 # Example of using the get_db function
 @app.get("/")
