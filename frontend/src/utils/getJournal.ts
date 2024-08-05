@@ -1,5 +1,4 @@
 import apiClient from './axiosInstance';
-import { SearchFilters } from '../components/SearchBar/SearchBar';
 
 interface journalResponse {
   journal_id: string;
@@ -22,16 +21,20 @@ interface JournalUpdate {
 }
 
 
-const handleJournalDetails = async ({ journalId }: {  journalId: string }): Promise< string > => {
+const handleJournalDetails = async ({ journalId }: {  journalId: string }): Promise< string | undefined > => {
 
+  let url =  `/users/${window.user_id}/journals/${journalId}`;
+  console.log("To fetch journal of:", journalId);
   try {
     const response = await apiClient.get<journalResponse>(url);
-    if (response.data.text_content === undefined) {
-      console.error('Fetched blank journal:', response.data);
+    if (response.data.description === undefined) {
+      console.error('Fetched blank journal:', response.data.description);
       return "Fetched blank journal";
     } else {
-      console.log("Fetched journal:", response.data.text_content);
-      return response.data.text_content; 
+      console.log("Fetched journal:", response);
+
+      return response.data.description; 
+
     }
     
   } catch (error) {
@@ -41,24 +44,29 @@ const handleJournalDetails = async ({ journalId }: {  journalId: string }): Prom
 };
 
 // TODO
-const handleJournalUpdate = async ({ journalId }: {  journalId: string }): Promise< string > => {
-  console.log("To fetch journal of:", journalId);
-  let url =  `/users/${window.user_id}/journals`;
+const handleJournalUpdate = async ({ journalId, journalContent }: {  journalId: string, journalContent: string | undefined }): Promise< boolean > => {
+  console.log("To update journal of:", journalId);
+  let url =  `/users/${window.user_id}/journals/${journalId}`;
+
+  const journalUpdate: JournalUpdate = {
+    text_content: journalContent,
+  };
 
   try {
-    const response = await apiClient.get<journalResponse>(url);
-    if (response.data.text_content == null) {  
-      console.error('Fetched blank journal:', response.data);
-      return "Fetched blank journal";
+    const response = await apiClient.put<journalResponse>(url, journalUpdate);
+    if (response.status === 200) {  
+      console.error('Update successfully!');
+      return true;
     } else {
-      console.log("Fetched journal:", response.data.text_content);
-      return response.data.text_content; 
+      console.log("Update failure");
+      return false; 
     }
     
   } catch (error) {
     console.error('Error fetching journal:', error);
-    return "Error fetching journal";
+    return false;
   }
 };
 
-export default handleJournalDetails;
+export default handleJournalDetails; 
+export  {handleJournalUpdate} ;

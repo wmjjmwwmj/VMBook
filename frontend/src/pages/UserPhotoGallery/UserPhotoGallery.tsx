@@ -8,7 +8,7 @@ import InfiniteScroll from 'react-infinite-scroll-component';
 import { BrowserRouter as Router, Route, useLocation } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
 import handleFilterPhotos, {QueryType, SearchFilters, PhotoType} from '../../utils/getFilterPhotos';
-import handleGenerationJournal from '../../utils/generateJournal';
+// import handleGenerationJournal from '../../utils/generateJournal';
 
 const user_id = window.user_id;
 
@@ -197,36 +197,36 @@ const GalleryButtons: React.FC<ButtonComponentProps> = ({ editEnable, selectedPh
         });
     };
 
-    const deletePhotos = () => { // delete photos
+    // const deletePhotos = () => { // delete photos
         
-    };
-
-    const generatePhotos = () => { // generate photos
-      //
-      handleGenerationJournal({ selectedPhotos: selectedPhotos }).then((response) => {
+    // };
+    
+    // const generatePhotos = () => { // generate photos
+    //   //
+    //   handleGenerationJournal({ selectedPhotos: selectedPhotos }).then((response) => {
         
-      }
+    //   }
 
-      // Make API call to server here
-      fetch('/api/generate-photos', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(selectedPhotos),
-      })
-      .then((response) => response.json())
-      .then((data) => {
-        // Display message to user that generation is done, and provide url to jump.
-        message.success('Photos generated successfully!');
-        navigate('/generated-photos');
-      })
-      .catch((error) => {
-        // Handle error here
-        console.error(error);
-        message.error('Failed to generate photos.');
-      });
-    };
+    //   // Make API call to server here
+    //   fetch('/api/generate-photos', {
+    //   method: 'POST',
+    //   headers: {
+    //     'Content-Type': 'application/json',
+    //   },
+    //   body: JSON.stringify(selectedPhotos),
+    //   })
+    //   .then((response) => response.json())
+    //   .then((data) => {
+    //     // Display message to user that generation is done, and provide url to jump.
+    //     message.success('Photos generated successfully!');
+    //     navigate('/generated-photos');
+    //   })
+    //   .catch((error) => {
+    //     // Handle error here
+    //     console.error(error);
+    //     message.error('Failed to generate photos.');
+    //   });
+    // };
 
 
 
@@ -247,7 +247,7 @@ const GalleryButtons: React.FC<ButtonComponentProps> = ({ editEnable, selectedPh
           Download
         </Button>
 
-        <Button type="primary" shape="round" icon={<SendOutlined /> } size={'middle'} loading={loadings[0]} onClick={() => enterLoading(0)}>
+        <Button type="primary" shape="round" icon={<SendOutlined /> } size={'middle'} >
             Generate
         </Button>
         </Space>
@@ -324,9 +324,6 @@ const handleFilterSet = (filters: SearchFilters) => {
 
     window.location.reload();
     console.log("Reload")
-
-    
-
 };
 
 //  const filters: SearchFilters = {};
