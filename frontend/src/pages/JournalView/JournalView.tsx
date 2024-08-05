@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams } from 'react-router-dom'; // Import useParams
 import MyLayout from '../../components/Layout';
-import { Button, message } from 'antd';
+import { Button, message, Tooltip } from 'antd';
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm';
 import MarkdownEditor from 'react-markdown-editor-lite';
@@ -39,9 +39,14 @@ interface JournalViewContentProps {
 }
 
 const JournalViewContent: React.FC<JournalViewContentProps> = ({ journalContent, handleJournalChange }) => {
-    const [markdown, setMarkdown] = useState<string| undefined>(journalContent); // There must be no type/blank at the beginning of lines
+    const [markdown, setMarkdown] = useState<string| undefined >(); // There must be no type/blank at the beginning of lines
+    console.log('Journal content:', journalContent);
+    const currentUrl = window.location.href; // 获取当前地址栏的全部内容
+    useEffect(() => {
+        setMarkdown(journalContent);
+    }, [journalContent]);
 
-    const [isEditing, setIsEditing] = useState(true);
+    const [isEditing, setIsEditing] = useState(false);
         
     const handleEditorChange = ({ text }: { text: string }) => {
         setMarkdown(text);
@@ -78,9 +83,14 @@ const JournalViewContent: React.FC<JournalViewContentProps> = ({ journalContent,
         <Button onClick={toggleEditMode} style={{ marginBottom: '20px' }}>
             {isEditing ? 'Save' : 'Edit'}
         </Button>
+
+        <Tooltip title={currentUrl}>
         <Button style={{ marginBottom: '20px', marginLeft: '10px' }}>
-            分享
+            Forward
         </Button>
+        </Tooltip>
+
+        
         </div>
         </div>
     );
