@@ -64,7 +64,7 @@ def hash_pwd(password: str) -> str:
 
 
 # TODO: Future feature: customizable system prompts
-def generate_journal_func(entries: List[Dict[str, Any]]) -> Union[str, str]:
+async def generate_journal_func(entries: List[Dict[str, Any]]) -> Union[str, str]:
     """
     Generates a journal based on a list of entries.
 
@@ -89,6 +89,7 @@ def generate_journal_func(entries: List[Dict[str, Any]]) -> Union[str, str]:
 
                 The journal:
                 - Answers some of the following questions "What happened today?", "What did I experience today?", "What did I feel today?", "What did I learn today?", "What did I think today?"
+                - Start from title directly, DON'T append any additional introduction
                 - Should be formatted in markdown, every detail in the draft should be referenced
                 - All images should be included in the journal, in form of '![](url)'
                 - Should connect all the entries in a coherent way, can be separated into less than 3 paragraphs
@@ -109,7 +110,12 @@ def generate_journal_func(entries: List[Dict[str, Any]]) -> Union[str, str]:
     response = dashscope.Generation.call(model="qwen-plus", messages=messages, temperature=0.5, top_p=0.95, top_k=50)
     if response["output"]:
         journal = response["output"]["text"]
-        title = journal.split("\n")[0].strip("# ")
+        idx = journal.find("#")
+        # remove introduction before the first #
+        if idx != -1:
+            journal = journal[idx:]
+        
+        title = journal.split("\n")[0].strip("#")
         return title, journal
     else:
         return "Failed Entry", "Failed to generate journal."

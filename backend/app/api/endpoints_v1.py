@@ -435,7 +435,7 @@ def delete_user_journals(user_id: UUID, journal_ids: List[UUID], db: Session = D
 
 # generate journal from selected entries
 @router.post("/users/{user_id}/journals/generate", response_model=JournalResponse)
-def generate_journal(user_id: UUID, body: Dict[str, Any], db: Session = Depends(get_db)):
+async def generate_journal(user_id: UUID, body: Dict[str, Any], db: Session = Depends(get_db)):
     """
     Generate a journal for a user based on selected photos.
 
@@ -476,11 +476,11 @@ def generate_journal(user_id: UUID, body: Dict[str, Any], db: Session = Depends(
         entry = dict(time_created=photo.time_created, type="image", content=photo.description, url=photo.url)
         entries.append(entry)
         
-    title, journal = generate_journal_func(entries)
+    title, journal = await generate_journal_func(entries)
 
     
     # save the generated journal in the database
-    new_journal = JournalModel(description=journal, user_id=user_id, title="Generated Journal")
+    new_journal = JournalModel(description=journal, user_id=user_id, title=title)
     db.add(new_journal)
     db.commit()
     db.refresh(new_journal)
@@ -559,8 +559,11 @@ def get_user_photos(user_id: UUID, db: Session = Depends(get_db),
 
     if device:
         # device to device id
-        device_id = db.query(DeviceModel).filter(DeviceModel.device_name == device).first().device_id
-        photos_query = photos_query.filter(PhotoModel.device_id == device_id)
+        device = db.query(DeviceModel).filter(DeviceModel.device_name == device).first()
+        if device:
+            photos_query = photos_query.filter(PhotoModel.device_id == device.device_id)
+        else:
+            raise HTTPException(status_code=404, detail="Device not found")
 
     if contains:
         photos_query = photos_query.filter(PhotoModel.description.contains(contains))

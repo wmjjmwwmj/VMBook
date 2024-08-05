@@ -16,7 +16,7 @@ class JournalUpdate(JournalBase):
     starred: Optional[bool] = None
     tags : Optional[List[str]] = None
     is_public: Optional[bool] = None
-    text_content: Optional[str] = None
+    description: Optional[str] = None
 
 class JournalResponse(JournalBase):
     journal_id: UUID
@@ -27,7 +27,6 @@ class JournalResponse(JournalBase):
     starred: Optional[bool] = None
     tags : Optional[List[str]] = None
     is_public: Optional[bool] = None
-    text_content: Optional[str] = None
     
     class Config:
         from_attributes = True

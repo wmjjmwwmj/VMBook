@@ -23,7 +23,6 @@ const dateFormat = 'YYYY-MM-DD';
 
 // TODO Add the setState function for initFilters, or use context, so that the SearchBar params can be controlled by the parent component, won't always exec twice by any trigger. 
 const SearchBar: React.FC<SearchBarProps> = ({initFilters, onFilterChange, onFilterSet}) => {
-    console.log("searchbar",initFilters);
     const [contains, setContains] = useState<string>(initFilters?.contains || '');
 
     const handleStarredChange = (e: any) => { 
@@ -47,7 +46,6 @@ const SearchBar: React.FC<SearchBarProps> = ({initFilters, onFilterChange, onFil
     };
 
     const handleDeviceChange = (value: string) => {
-        console.log("device",value);
         onFilterChange?.({ 
             starred: initFilters?.starred, 
             device: value, 
@@ -83,8 +81,7 @@ const SearchBar: React.FC<SearchBarProps> = ({initFilters, onFilterChange, onFil
     }; 
     const fromDateInit = initFilters?.fromDate ? initFilters?.fromDate : "2024-01-01";
     const toDateInit = initFilters?.toDate ? initFilters?.toDate : "2024-12-31";
-    // console.log("fromDateInit",fromDateInit);
-    // console.log("toDateInit",toDateInit);
+
 
     return (
         <Space>
