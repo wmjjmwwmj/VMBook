@@ -476,11 +476,11 @@ async def generate_journal(user_id: UUID, body: Dict[str, Any], db: Session = De
         entry = dict(time_created=photo.time_created, type="image", content=photo.description, url=photo.url)
         entries.append(entry)
         
-    title, journal = generate_journal_func(entries)
+    title, journal = await generate_journal_func(entries)
 
     
     # save the generated journal in the database
-    new_journal = JournalModel(description=journal, user_id=user_id, title="Generated Journal")
+    new_journal = JournalModel(description=journal, user_id=user_id, title=title)
     db.add(new_journal)
     db.commit()
     db.refresh(new_journal)
