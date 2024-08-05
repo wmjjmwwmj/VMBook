@@ -435,7 +435,7 @@ def delete_user_journals(user_id: UUID, journal_ids: List[UUID], db: Session = D
 
 # generate journal from selected entries
 @router.post("/users/{user_id}/journals/generate", response_model=JournalResponse)
-def generate_journal(user_id: UUID, body: Dict[str, Any], db: Session = Depends(get_db)):
+async def generate_journal(user_id: UUID, body: Dict[str, Any], db: Session = Depends(get_db)):
     """
     Generate a journal for a user based on selected photos.
 
