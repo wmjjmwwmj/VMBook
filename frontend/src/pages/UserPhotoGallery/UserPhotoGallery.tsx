@@ -142,7 +142,6 @@ const UserPhotoGallery: React.FC = () => {
             message.error('Please select photos to delete.');
             return;
         }
-        // Call API to delete photos
         try {
             await deleteUserPhotos(userId, checkPhoto);
             message.success('Photos deleted successfully.');

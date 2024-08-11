@@ -97,7 +97,7 @@ const SearchBar: React.FC<SearchBarProps> = ({initFilters, onFilterChange, onFil
                 <Select.Option value="laptop">Laptop</Select.Option>
                 <Select.Option value="tablet">Tablet</Select.Option>
                 <Select.Option value="phone">Phone</Select.Option>
-                <Select.Option value="all">All</Select.Option>
+                <Select.Option value="">All</Select.Option>
             </Select>
             <Input placeholder="Search Content..." onChange={handleContainsChange} value={contains || ''} onKeyDown={handleKeyDown}/>
             <Button type="primary" onClick={handleFilterButtonClick}>Filter</Button>

@@ -99,29 +99,54 @@ async function describeUserPhoto(userId: string, photo_id: string): Promise<Phot
     }
 }
 
-
-
 async function downloadSelectedPhotos(userId: string, photoUrls: string[]): Promise<Blob> {
     try {
         const zip = new JSZip();
+        const lastModifiedDates: Map<number, string> = new Map(); 
 
-        // Download each photo and add to the zip file
         const downloadPromises = photoUrls.map(async (url, index) => {
-            const response = await axios.get(`http://${url}`, {
-                responseType: 'blob',
-            });
-            zip.file(`photo_${index}.png`, response.data);
+            const headers: any = {};
+            const lastModifiedDate = lastModifiedDates.get(index);
+            // Add the If-Modified-Since header if we have a last modified date
+            if (lastModifiedDate) {
+                headers['If-Modified-Since'] = lastModifiedDate;
+            }
+
+            try {
+                const response = await axios.get(`http://${url}`, {
+                    responseType: 'blob',
+                    headers,
+                });
+
+                if (response.status === 200) { // OK
+
+                    const newLastModifiedDate = response.headers['last-modified'];
+                    if (newLastModifiedDate) {
+                        lastModifiedDates.set(index, newLastModifiedDate);
+                    }
+
+                    zip.file(`photo_${index}.png`, response.data);
+                } else if (response.status === 304) { // Not Modified
+                    console.log(`Photo ${index} not modified, skipping.`);
+                    // Optionally handle the unmodified case here
+                } else {
+                    throw new Error(`Unexpected response status: ${response.status}`);
+                }
+            } catch (error) {
+                console.error(`Error downloading photo ${index}:`, error);
+                // Handle individual photo download errors if needed
+            }
         });
 
         await Promise.all(downloadPromises);
 
-        // Generate the zip file as a Blob
+        // Generate the ZIP file
         const zipBlob = await zip.generateAsync({ type: 'blob' });
 
         return zipBlob;
 
     } catch (error) {
-        console.error('Error downloading user photos:', error);
+        console.error('Error creating zip file:', error);
         throw error;
     }
 }
