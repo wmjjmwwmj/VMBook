@@ -3,7 +3,7 @@ import { List, Card, message } from 'antd';
 import axios from 'axios';
 import dayjs from 'dayjs';
 
-interface Entry {
+export interface Entry {
     journal_id: string;
     time_modified: string;
     description?: string;
@@ -13,14 +13,14 @@ interface Entry {
     url? : string;
 }
 
-function findFirstUrl(markdown: string): string | null {
-    // 正则表达式匹配URL
+export function findFirstUrl(markdown: string): string | null {
+    // The regex to match the URL
     const urlPattern = /http?:\/\/[^\s)]+/g;
     const match = urlPattern.exec(markdown);
     
-    // 如果找到了匹配项，返回第一个URL，否则返回null
+    // Return the first match
     return match ? match[0] : null;
-  }
+}
 
 const RecentEntriesView: React.FC = () => {
     const dateFormat = 'YYYY-MM-DD HH:mm:ss';
