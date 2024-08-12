@@ -32,7 +32,9 @@ const MyLayout: React.FC<MyLayoutProps> = ({ children }) => {
           <AndroidFilled /> VMBook
         </a>
       </Header>
-      <Content style={{ padding: '0 24px' }}>
+      <Content style={{ padding: '0 24px',
+        margin: '5px 0'
+       }}>
         <div
           style={{
             background: colorBgContainer,
