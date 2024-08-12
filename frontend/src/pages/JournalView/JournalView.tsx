@@ -11,27 +11,6 @@ import { BrowserRouter as Router, Route, useLocation } from 'react-router-dom';
 
 import './JournalView.css';
 
-// const { Title, Paragraph, Text, Link } = Typography;
-// const markdown = `
-// # Complete Example
-
-// This is a **complete** example of using \`react-markdown\`.
-
-// ## Features
-
-// - Custom link rendering
-// - GitHub Flavored Markdown
-
-// \`\`\`javascript
-// console.log('Hello, world!');
-// \`\`\`
-
-// ![React Logo](https://upload.wikimedia.org/wikipedia/commons/a/a7/React-icon.svg)
-
-// - [ ] Task list item
-// - [x] Completed task list item
-// `;
-
 
 interface JournalViewContentProps {
   journalContent: string | undefined;
@@ -68,13 +47,40 @@ const JournalViewContent: React.FC<JournalViewContentProps> = ({ journalContent,
             <MarkdownEditor
                 value={markdown}
                 style={{ height: '70vh', width: '100%' }}
-                renderHTML={text => <ReactMarkdown remarkPlugins={[remarkGfm]}>{text}</ReactMarkdown>}
+                renderHTML={text => <ReactMarkdown 
+                    remarkPlugins={[remarkGfm]}
+                    components={{
+                        img: ({ node, ...props }) => ( 
+                            <img 
+                            style={{ 
+                                maxWidth: '40vw',
+                                maxHeight: '40vh',
+                                display: 'block',
+                                margin: '5px auto',}} {...props} />
+
+                            
+                        ),
+                    }}>
+                    {text}
+                    </ReactMarkdown>}
+                
                 onChange={handleEditorChange}
             />
 
             ) : (
                 <div className="markdown-preview">
-                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                    <ReactMarkdown remarkPlugins={[remarkGfm]}
+                    components={{
+                        img: ({ node, ...props }) => ( 
+                            <img style={{ 
+                                maxWidth: '40vw',
+                                maxHeight: '40vh',
+                                display: 'block',
+                                margin: '10px auto',
+                                }} {...props} />
+                            
+                        ),
+                    }}>
                         {markdown}
                     </ReactMarkdown>
                 </div>

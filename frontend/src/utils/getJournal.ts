@@ -17,7 +17,7 @@ interface JournalUpdate {
   starred?: boolean;
   tags?: string[];
   is_public?: boolean;
-  text_content?: string;
+  description?: string;
 }
 
 
@@ -47,18 +47,19 @@ const handleJournalDetails = async ({ journalId }: {  journalId: string }): Prom
 const handleJournalUpdate = async ({ journalId, journalContent }: {  journalId: string, journalContent: string | undefined }): Promise< boolean > => {
   console.log("To update journal of:", journalId);
   let url =  `/users/${window.user_id}/journals/${journalId}`;
-
+  console.log("To update journal to:", journalContent);
   const journalUpdate: JournalUpdate = {
-    text_content: journalContent,
+    description: journalContent,
   };
 
   try {
     const response = await apiClient.put<journalResponse>(url, journalUpdate);
+    console.log("Response:", response);
     if (response.status === 200) {  
-      console.error('Update successfully!');
+      console.log('Update successfully!');
       return true;
     } else {
-      console.log("Update failure");
+      console.error("Update failure");
       return false; 
     }
     
