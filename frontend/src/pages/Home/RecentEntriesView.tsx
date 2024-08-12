@@ -10,27 +10,27 @@ interface Entry {
     title?: string;
     cover?: string | null;
     tags?: string[];
-    url? : string;
+    url?: string;
 }
 
 function findFirstUrl(markdown: string): string | null {
     // 正则表达式匹配URL
     const urlPattern = /http?:\/\/[^\s)]+/g;
     const match = urlPattern.exec(markdown);
-    
+
     // 如果找到了匹配项，返回第一个URL，否则返回null
     return match ? match[0] : null;
-  }
+}
 
 const RecentEntriesView: React.FC = () => {
     const dateFormat = 'YYYY-MM-DD HH:mm:ss';
-    const [entries, setEntries] = React.useState<Entry[]> ();
+    const [entries, setEntries] = React.useState<Entry[]>();
     const isInitialMount = useRef(true);
 
     useEffect(() => {
         if (isInitialMount.current) {
             isInitialMount.current = false;
-            return; 
+            return;
         }
         message.loading({ content: 'Loading recent entries...', key: 'entries', duration: 0 });
         axios.get(window.backend_url + '/users/' + window.user_id + '/journals?limit=4&sortby=time_modified&order=desc')
@@ -39,10 +39,10 @@ const RecentEntriesView: React.FC = () => {
                 for (let entry of response.data) {
                     const url = findFirstUrl(entry.description ? entry.description : '');
                     if (url) {
-                      entry.cover = url;
+                        entry.cover = url;
                     }
-                  }
-                  console.log("response", response.data);
+                }
+                console.log("response", response.data);
 
                 setEntries(response.data);
                 message.destroy('entries');
@@ -56,17 +56,28 @@ const RecentEntriesView: React.FC = () => {
 
     return (
         <List
-            grid={{ gutter: 16, column: 4}}
+            grid={{ gutter: 16, column: 4 }}
             dataSource={entries}
             renderItem={(Item) => (
                 <List.Item>
                     <a href={`http://${window.ip_and_port}/journalview?journalId=${Item.journal_id}`}>
-                    <Card
-                        hoverable
-                        cover={<img src={Item.cover ||"https://gw.alipayobjects.com/zos/rmsportal/JiqGstEfoWAOHiTxclqi.png" } width="100%" alt={Item.url}/>}
-                    >
-                        <Card.Meta title={Item.title} description={dayjs(Item.time_modified).format(dateFormat)} />
-                    </Card>
+                        <Card
+                            hoverable
+                            cover={
+                                <img
+                                    src={Item.cover || "https://gw.alipayobjects.com/zos/rmsportal/JiqGstEfoWAOHiTxclqi.png"}
+                                    style={{
+                                        width: '100%',
+                                        height: '20vh',
+                                        objectFit: 'cover', // 保持图片比例并填充整个区域
+                                        display: 'block' // 确保图片在块级显示
+                                    }}
+                                    alt={Item.url}
+                                />
+                            }
+                        >
+                            <Card.Meta title={Item.title} description={dayjs(Item.time_modified).format(dateFormat)} />
+                        </Card>
                     </a>
                 </List.Item>
             )}
