@@ -8,6 +8,7 @@ import { DeleteFilled, DeleteOutlined, StarFilled, StarOutlined } from '@ant-des
 import InfiniteScroll from 'react-infinite-scroll-component';
 import getUserJournal, { deleteUserJournal, JournalResponse, toggleUserJournalStar} from '../../utils/journals';
 import IconText from '../../components/IconText/IconText';
+import { findFirstUrl } from '../Home/RecentEntriesView';
 import dayjs from 'dayjs'
 
 const dateFormat = 'YYYY-MM-DD HH:mm:ss';
@@ -96,7 +97,7 @@ const JournalListContent: React.FC<JournalListContentProps> = React.memo(
                                     <img
                                         width={200}
                                         alt="logo"
-                                        src="https://gw.alipayobjects.com/zos/rmsportal/mqaQswcyDLcXyDKnZfES.png"
+                                        src={item.cover || "https://gw.alipayobjects.com/zos/rmsportal/JiqGstEfoWAOHiTxclqi.png"}
                                     />
                                 </div>
                             }
@@ -156,6 +157,16 @@ const JournalListView: React.FC = () => {
         try {
             const offset = isInitialFetch ? 0 : journalData.length;
             const data = await getUserJournal(userId, filter, offset, limit);
+            // Get the cover url
+            if (data) {
+                for (let entry of data) {
+                    const url = findFirstUrl(entry.description ? entry.description : '');
+                    if (url) {
+                      entry.cover = url;
+                    }
+                  }
+            }
+
             setJournalData(prevData => isInitialFetch ? data : [...prevData, ...data]);
             console.log('journalData:', journalData);
             setHasMore(data.length === limit);

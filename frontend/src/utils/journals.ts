@@ -11,6 +11,7 @@ interface JournalResponse {
   starred: boolean | false;
   time_created: string;
   time_modified: string;
+  cover?: string | null;
 }
 
 interface GetUserJournalOptions {
