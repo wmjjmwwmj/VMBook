@@ -21,7 +21,7 @@ interface PhotoResponse {
 
   async function getUserPhoto(userId: string, options?: GetUserPhotoOptions, offset?: number, limit?:number): Promise<PhotoResponse[]> {
     try {
-      let url = `http://192.168.0.34:8000/users/${userId}/photos`;
+      let url = `${window.backend_url}/users/${userId}/photos`;
   
       // 构建查询参数
       if (options) {
@@ -62,7 +62,7 @@ interface PhotoResponse {
 
 async function deleteUserPhotos(userId: string, photo_ids: string[]): Promise<any> {
     try {
-        const baseUrl = `http://192.168.0.34:8000/users/${userId}/photos`;
+        const baseUrl = `${window.backend_url}/users/${userId}/photos`;
         const deletePromises = photo_ids.map(photoId => axios.delete(`${baseUrl}/${photoId}`));
 
         const responses = await Promise.all(deletePromises);
@@ -83,7 +83,7 @@ async function deleteUserPhotos(userId: string, photo_ids: string[]): Promise<an
 
 async function describeUserPhoto(userId: string, photo_id: string): Promise<PhotoResponse> {
     try {
-        const baseUrl = `http://192.168.0.34:8000/users/${userId}/photos/${photo_id}/analyze`;
+        const baseUrl = `${window.backend_url}/users/${userId}/photos/${photo_id}/analyze`;
 
         const response = await axios.get(baseUrl);
 
@@ -154,8 +154,6 @@ async function downloadSelectedPhotos(userId: string, photoUrls: string[]): Prom
 
 async function generateJournalFromPhotos(userId: string, photoIds: string[]): Promise<any> {
     try {
-        const baseUrl = `http://192.168.0.34:8000`;
-
         // Prepare the request body
         const body = {
             photo_ids: photoIds,
@@ -163,7 +161,7 @@ async function generateJournalFromPhotos(userId: string, photoIds: string[]): Pr
 
         // Make a POST request to generate the journal
         const response = await axios.post(
-            `${baseUrl}/users/${userId}/journals/generate`,
+            `${window.backend_url}/users/${userId}/journals/generate`,
             body,
             {
                 headers: {

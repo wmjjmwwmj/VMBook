@@ -6,7 +6,7 @@ from typing import List, Optional, Dict, Any
 from sqlmodel import Session
 from database import get_db
 
-from .functions import hash_pwd, describe_image, generate_journal_func
+from .functions import hash_pwd, describe_image, generate_journal_func, get_title_from_journal
 from models import *
 from database import User as UserModel
 from database import Device as DeviceModel
@@ -298,9 +298,8 @@ def get_user_journals(user_id: UUID, db: Session = Depends(get_db),
     if is_public is not None:
         journals_query = journals_query.filter(JournalModel.is_public == is_public)
     
-    # TODO: recreate the db with starred attribute
-    # if starred:
-    #     journals_query = journals_query.filter(JournalModel.starred == True)
+    if starred:
+        journals_query = journals_query.filter(JournalModel.starred == True)
 
     if fromDate:
         journals_query = journals_query.filter(JournalModel.time_modified >= fromDate)
@@ -355,19 +354,25 @@ def get_user_journal(user_id: UUID, journal_id: UUID, db: Session = Depends(get_
 
 # update a journal for a user by id
 @router.put("/users/{user_id}/journals/{journal_id}", response_model=JournalResponse)
-def update_user_journal(user_id: UUID, journal_id: UUID, journal: JournalUpdate, db: Session = Depends(get_db)):
+def update_user_journal(user_id: UUID, journal_id: UUID, journal_update: JournalUpdate, db: Session = Depends(get_db)):
     user = db.query(UserModel).filter(UserModel.user_id == user_id).first()
     if user is None:
         raise HTTPException(status_code=404, detail="User not found")
     
-    journal = db.query(JournalModel).filter((JournalModel.journal_id == journal_id) and (JournalModel.user_id == user_id)).first()
+    journal = db.query(JournalModel).filter(JournalModel.journal_id == journal_id, JournalModel.user_id == user_id).first()
     
     if journal is None:
         raise HTTPException(status_code=404, detail="Journal not found")
     
-    for key, value in journal.dict().items():
-        if key in journal.dict(exclude_unset=False):
-            setattr(journal, key, value)
+    update_data = journal_update.dict(exclude_unset=True)  # Get only the fields that were set
+    
+    if "description" in update_data:
+        # update title if description is updated
+        update_data["title"], update_data["description"] = get_title_from_journal(update_data["description"])
+
+    for key, value in update_data.items():
+        setattr(journal, key, value)  # Update the journal fields with new values
+    
     db.commit()
     db.refresh(journal)
     

@@ -4,15 +4,21 @@ import { BrowserRouter as Router, Route, useLocation } from 'react-router-dom';
 import MyLayout from '../../components/Layout';
 import SearchBar, { SearchFilters } from '../../components/SearchBar/SearchBar';
 import { List, Space, Tag, Skeleton, Divider, FloatButton, message } from 'antd';
-import { StarOutlined } from '@ant-design/icons';
+import { DeleteFilled, DeleteOutlined, StarFilled, StarOutlined } from '@ant-design/icons';
 import InfiniteScroll from 'react-infinite-scroll-component';
-import getUserJournal, { JournalResponse} from '../../utils/journals';
+import getUserJournal, { deleteUserJournal, JournalResponse, toggleUserJournalStar} from '../../utils/journals';
+import IconText from '../../components/IconText/IconText';
+import dayjs from 'dayjs'
 
-const IconText = ({ icon, text }: { icon: React.FC; text: string }) => (
-    <Space>
-        {React.createElement(icon)}
-        {text}
-    </Space>
+const dateFormat = 'YYYY-MM-DD HH:mm:ss';
+
+
+const StyledStarOutlined = (props: React.SVGProps<SVGSVGElement>) => (
+    <StarOutlined style={{ color: 'gray', ...props.style }} />
+);
+
+const StyledStarFilled = (props: React.SVGProps<SVGSVGElement>) => (
+    <StarFilled style={{ color: '#FFD700', ...props.style }} />
 );
 
 interface JournalListContentProps {
@@ -24,6 +30,42 @@ interface JournalListContentProps {
 
 const JournalListContent: React.FC<JournalListContentProps> = React.memo(
     ({ loading, items, onLoadMore, hasMore }) => {
+
+        const toggleStar = (item: any) => {
+    
+            console.log('starred:', item.journal_id, item.starred);
+            
+            try{
+                toggleUserJournalStar(window.user_id, item.journal_id, item.starred);
+            }
+            catch (error) {
+                console.error('Error toggling star:', error);
+                message.error('Failed to toggle star. Please try again.');
+            }
+        };
+
+        const deleteJournal = (item: any) => {
+            console.log('delete:', item.journal_id);
+            try{
+                // deleteJournal(window.user_id, item.journal_id);
+                const isConfirmed = window.confirm('Are you sure you want to delete this journal?');
+                if (isConfirmed) {
+                    // Perform the action if confirmed
+                    console.log('Journal deleted.');
+                    // Replace the above line with your deletion logic, e.g., API call
+                    deleteUserJournal(window.user_id, item.journal_id);
+                    window.location.reload();
+                } else {
+                    // Action if cancelled
+                    console.log('Deletion cancelled.');
+                }
+            }
+            catch (error) {
+                console.error('Error deleting journal:', error);
+                message.error('Failed to delete journal. Please try again.');
+            }
+        }
+
         return (
             <InfiniteScroll
                 dataLength={items.length}
@@ -38,9 +80,11 @@ const JournalListContent: React.FC<JournalListContentProps> = React.memo(
                     dataSource={items}
                     renderItem={(item) => (
                         <List.Item
-                            key={item.id}
+                            key={item.journal_id}
                             actions={[
-                                <IconText icon={StarOutlined} text={item.datetime} key="list-vertical-star-o" />,
+                                <IconText iconOff={StyledStarOutlined} iconOn={StyledStarFilled} text={item.datetime} key="list-vertical-star-o" defaultValue={item.starred} onClick={() => toggleStar(item)}/>,
+                                <IconText iconOff={DeleteOutlined} iconOn={DeleteOutlined} text={item.datetime} key="list-vertical-star-o" defaultValue={item.starred} onClick={() =>deleteJournal(item)}/>,
+                                <span>{dayjs(item.time_modified).format(dateFormat)}</span>,
                                 ...(item.tags?.map((tag, index) => (
                                     <Tag color="blue" key={index}>
                                         {tag}

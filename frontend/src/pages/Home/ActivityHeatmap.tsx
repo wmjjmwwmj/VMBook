@@ -50,7 +50,7 @@ const ActivityHeatmap = () => {
             isInitialMount.current = false;
             return;
         }
-        axios.get('http://' + '192.168.0.34' + ':8000' + '/users/' + '5136d795-1d5f-436c-853b-a8c898ecd426' +'/activities') 
+        axios.get(window.backend_url + '/users/' + window.user_id +'/activities') 
             .then((response) => {
                 console.log(response.data);
                 setValue(response.data);

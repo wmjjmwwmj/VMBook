@@ -1,13 +1,16 @@
 import axios from 'axios';
 
 interface JournalResponse {
-  id: number;
+  id: string;
   datetime: string;
   content?: string | "";
   title?: string | "Undefined";
   tags?: string[] | [];
   description?: string | "";
-  journal_id?: string;
+  journal_id: string;
+  starred: boolean | false;
+  time_created: string;
+  time_modified: string;
 }
 
 interface GetUserJournalOptions {
@@ -20,7 +23,7 @@ interface GetUserJournalOptions {
 
 async function getUserJournal(userId: string, options?: GetUserJournalOptions, offset?: number, limit?:number): Promise<JournalResponse[]> {
   try {
-    let url = `http://192.168.0.34:8000/users/${userId}/journals`;
+    let url = `${window.backend_url}/users/${userId}/journals`;
 
     // 构建查询参数
     if (options) {
@@ -58,10 +61,23 @@ async function getUserJournal(userId: string, options?: GetUserJournalOptions, o
   }
 }
 
+async function toggleUserJournalStar(userId: string, entryId: string, is_starred: boolean): Promise<void> {
+    try {
+        const url = `${window.backend_url}/users/${userId}/journals/${entryId}`;
+        const data = { starred: !is_starred };
+        console.log('data:', data);
+        const response = await axios.put(url, data, { headers: { 'Content-Type': 'application/json' } });
+        console.log('User journal starred:', response.data);
+    } catch (error) {
+        console.error('Error starring user journal:', error);
+        throw error;
+    }
+}
+
 
 async function updateUserJournal(userId: string, entry: JournalResponse): Promise<void> {
     try {
-        const url = `/api/journal/${userId}/${entry.id}`;
+        const url = `${window.backend_url}/users/${userId}/${entry.id}`;
         const response = await axios.put(url, entry);
         console.log('User journal updated:', response.data);
     } catch (error) {
@@ -73,7 +89,7 @@ async function updateUserJournal(userId: string, entry: JournalResponse): Promis
 
 async function deleteUserJournal(userId: string, entryId: number): Promise<void> {
     try {
-        const url = `/api/journal/${userId}/${entryId}`;
+        const url = `${window.backend_url}/users/${userId}/journals/${entryId}`;
         const response = await axios.delete(url);
         console.log('User journal deleted:', response.data);
     } catch (error) {
@@ -95,5 +111,5 @@ async function addUserJournal(userId: string, entry: JournalResponse): Promise<v
 }
 
 export default getUserJournal;
-export { updateUserJournal, deleteUserJournal, addUserJournal };
+export { updateUserJournal, deleteUserJournal, addUserJournal, toggleUserJournalStar };
 export type { JournalResponse, GetUserJournalOptions };

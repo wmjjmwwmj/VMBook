@@ -110,12 +110,16 @@ async def generate_journal_func(entries: List[Dict[str, Any]]) -> Union[str, str
     response = dashscope.Generation.call(model="qwen-plus", messages=messages, temperature=0.5, top_p=0.95, top_k=50)
     if response["output"]:
         journal = response["output"]["text"]
-        idx = journal.find("#")
-        # remove introduction before the first #
-        if idx != -1:
-            journal = journal[idx:]
-        
-        title = journal.split("\n")[0].strip("#")
-        return title, journal
+        title, journal = get_title_from_journal(journal)
     else:
         return "Failed Entry", "Failed to generate journal."
+    
+    
+def get_title_from_journal(journal: str) -> str:
+    idx = journal.find("#")
+    # remove introduction before the first #
+    if idx != -1:
+        journal = journal[idx:]
+    
+    title = journal.split("\n")[0].strip("#")
+    return title, journal

@@ -80,7 +80,7 @@ class Journal(SQLModel, table=True):
     description: Optional[str] = Field(default=None, sa_column=Column(LONGTEXT))
     time_created: datetime = Field(default_factory=datetime.utcnow)
     time_modified: datetime = Field(default_factory=datetime.utcnow, sa_column_kwargs={"onupdate": datetime.utcnow})
-    # TODO: starred: bool = Field(default=False)
+    starred: bool = Field(default=False)
 
     user: "User" = Relationship(back_populates="journals")
     entries: List["Entry"] = Relationship(back_populates="journal")

@@ -15,7 +15,6 @@ const SampleUserData = {
 
 
 const ProfileView: React.FC = () => {
-    const user_id = '5136d795-1d5f-436c-853b-a8c898ecd426';
     const [userData, setUserData] = useState(SampleUserData);
     const isInitialMount = useRef(true);
 
@@ -25,7 +24,7 @@ const ProfileView: React.FC = () => {
             return;
         }
         message.loading({ content: 'Loading...', key: 'profile' , duration: 0});
-        axios.get('http://192.168.0.34:8000'+'/users/' + user_id)
+        axios.get(window.backend_url+'/users/' + window.user_id)
             .then((response) => {
                 const date = new Date(response.data.time_created);
                 response.data.time_created = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;

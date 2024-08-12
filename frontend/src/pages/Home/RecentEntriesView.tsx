@@ -47,7 +47,7 @@ const RecentEntriesView: React.FC = () => {
             return; 
         }
         message.loading({ content: 'Loading recent entries...', key: 'entries', duration: 0 });
-        axios.get('http://'+ '192.168.0.34' + ':8000' + '/users/' + '5136d795-1d5f-436c-853b-a8c898ecd426' + '/journals?limit=4&sortby=time_modified&order=desc')
+        axios.get(window.backend_url + '/users/' + window.user_id + '/journals?limit=4&sortby=time_modified&order=desc')
             .then((response) => {
                 console.log(response.data);
                 setEntries(response.data);
